@@ -1,0 +1,136 @@
+.voting {
+  /*投票中*/
+  /*提交，清空*/
+}
+.voting .panel-body {
+  padding: 40px;
+}
+.voting .indent2 {
+  padding-bottom: 30px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #ddd;
+  line-height: 25px;
+  font-size: 18px;
+}
+.voting .option_list {
+  width: 80%;
+  margin: 30px auto;
+  font-size: 1.5rem;
+}
+.voting .option_list li {
+  -webkit-flex-wrap: nowrap;
+  -o-flex-wrap: nowrap;
+  -moz-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  -webkit-justify-content: center;
+  -o-justify-content: center;
+  -moz-justify-content: center;
+  -ms-justify-content: center;
+  justify-content: center;
+  -webkit-align-content: center;
+  -o-align-content: center;
+  -moz-align-content: center;
+  -ms-align-content: center;
+  align-content: center;
+  -webkit-align-items: center;
+  -o-align-items: center;
+  -moz-align-items: center;
+  -ms-align-items: center;
+  align-items: center;
+}
+.voting .option_list .options {
+  position: relative;
+}
+.voting .option_list .options input {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-block;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  margin-top: -15px;
+  opacity: 0.3;
+}
+.voting .option_list .options label {
+  display: inline-block;
+  padding: 12px 10px 12px 40px;
+}
+.voting .option_list .options label:before,
+.voting .option_list .options label:after {
+  content: "";
+  display: inline-block;
+  position: absolute;
+}
+.voting .option_list .options label:before {
+  height: 30px;
+  width: 30px;
+  background-color: #fff;
+  border-radius: 5px;
+  left: 0;
+  top: 50%;
+  margin-top: -15px;
+  border: 1px solid #aaa;
+}
+.voting .option_list .options label:after {
+  height: 20px;
+  width: 20px;
+  background-color: #fff;
+  border-radius: 3px;
+  left: 0;
+  top: 50%;
+  margin-left: 5px;
+  margin-top: -10px;
+}
+.voting .option_list .options input[type="radio"] + label:before {
+  border-radius: 50%;
+}
+.voting .option_list .options input[type="radio"] + label:after {
+  border-radius: 50%;
+}
+.voting .option_list .options input[type="radio"]:checked + label:after {
+  background-color: #FF4135;
+}
+.voting .option_list .options input[type="checkbox"]:checked + label:after {
+  background-color: #FF4135;
+}
+.voting .option_list .option_chart .option_votes {
+  float: left;
+  width: 5rem;
+  font-size: 1.2rem;
+}
+.voting .option_list .option_chart .totle {
+  float: left;
+  width: -webkit-calc(100% - 5rem);
+  width: -moz-calc(100% - 5rem);
+  width: -o-calc(100% - 5rem);
+  width: -ms-calc(100% - 5rem);
+  width: calc(100% - 5rem);
+  background-color: #F5F5F5;
+  height: 1.4rem;
+  border-radius: 10px;
+}
+.voting .option_list .option_chart .totle .voted {
+  display: block;
+  background-color: #FF4236;
+  width: 20%;
+  height: 100%;
+  border-radius: inherit;
+}
+.voting .btns {
+  margin: 50px 0 10px;
+}
+.voting .btns a {
+  padding: 8px 35px;
+  margin: 0 10px;
+  border-radius: 16px;
+  border: 1px solid #F55146;
+  letter-spacing: 3px;
+  color: #fff;
+  background-color: #F55146;
+}
+.voting .btns .clc {
+  color: #F55146;
+  background-color: #fff;
+}

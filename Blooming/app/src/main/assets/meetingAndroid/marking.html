@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no"/>
+    <title>评分中</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet"/>
+    <link href="./css/cssPublic.css" rel="stylesheet"/>
+    <link href="./css/marking.css" rel="stylesheet"/>
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <!--<script src="./js/custom-keyboard.js"></script>-->
+    <script>
+//        var meeting_id=getLocalData("meeting_id");
+        var markId=getUrlParam(document.URL,"markId");
+        var options=[],voteUsers=[],markResult={};
+        $(function(){
+            $("#option_list").on("change input","input",function(){
+                var $self=$(this);
+                if(isNaN(parseInt($self.val()))){
+                    $self.val("");
+                }else{
+                    var max=$self.data("max"),score=parseInt($self.val());
+                    $self.val(score>max?max:score);
+                }
+                markResult[$("#user_list li.hover").text()][$self.data("id")]=$self.val();
+            });
+            $("#option_list").on(whichAnimationEvent(),".option_score",function(){
+                $(this).removeClass("shakeing");
+            });
+//            $("#option_list").on("click",".option_score",function(){
+//                $(this).addClass("shakeing");
+//            });
+            $("#user_list").on("click" ,"li",function(){
+                $(this).addClass("hover").siblings("li").removeClass("hover");
+                $("#option_list input").val("");
+                for(var id in markResult[$("#user_list li.hover").text()]){
+                    $("#"+id).val(markResult[$("#user_list li.hover").text()][id]);
+                }
+            });
+//            $("#markDetail").on("click",".pointer",function(){
+//                var $self=$(this);
+//                openCustomKeyboard("某某人","某某项",$self.text(),$self.attr("maxscore"),"6-8分为正常体重",function(ret){
+//                    $self.text(ret.score);
+//                    summary($self.index());
+//                });
+//            });
+            getMarkVoteUsersById();
+        });
+//      获取评分投票人
+        function getMarkVoteUsersById(){
+            var aoData=[];
+            aoData.push( { "name": "scoreTemplate.id", "value":markId} );
+            sendAjaxRequest("/actions/MeetingScore.action?getScoreTemplateById",aoData,
+                    function (data) {
+                        if (data.status) {
+                            $("#templateName").text(data.body.template_name);
+                            voteUsers = data.body.vote_users.split(",");
+                            for (var i = 0,ht=''; i < voteUsers.length; i++) {
+                                ht+='<li class="pointer '+(i==0?'hover':'')+'">'+voteUsers[i]+'</li>';
+//                                $("#voteUsers").append('<td style="width:' + (100 / (voteUserCount + 1)) + '%;">' + voteUsers[i] + '</td>');
+                            }
+                            $("#user_list").html(ht);
+                            getMarkVoteOptionsById();
+                        } else {
+                            showInfoWinWarn("被评分人获取失败"+data.msg);
+                        }
+                    },
+                    function () {
+                        showInfoWinWarn("被评分人获取失败！");
+                    }
+            );
+        }
+//      获取评分选项
+        function getMarkVoteOptionsById(){
+            var aoData=[];
+            aoData.push( { "name": "scoreTemplateOption.template_id", "value":markId} );
+            sendAjaxRequest("/actions/MeetingScore.action?getScoreTemplateOptionList",aoData,
+                    function(data){
+                        var ht='';
+                        options=data.aaData;
+                        for(var i=0;i<options.length;i++){
+                            ht+='<li class="left text-center">'
+                                    +'<div class="option_score">'
+                                    +'<i></i>'
+                                    +'<input id="'+options[i].id+'" data-id="'+options[i].id+'" data-max="'+options[i].max_score+'" type="text" placeholder="请输入分数"/>'
+                                    +'</div>'
+                                    +'<span class="option_name ellipsis">'+options[i].option_name+'</span>'
+                                    +'</li>';
+                        }
+                        $("#option_list").html(ht);
+                        initResult();
+//                        for(var i=0;i<options.length;i++){
+//                            ht+='<tr><td>'+options[i].option_name+'</td>';
+//                            for(var j=0;j<voteUserCount;j++){
+//                                ht+='<td class="pointer" maxScore="'+options[i].max_score+'">0</td>';
+//                            }
+//                            ht+='</tr>';
+//                        }
+//                        $("#markDetail").append(ht);
+//                        //汇总
+//                        ht='<tr><td>汇总</td>';
+//                        for(i=0;i<voteUserCount;i++){
+//                            ht+='<td class="summary">0</td>';
+//                        }
+//                        ht+='</tr>';
+//                        $("#summary").html(ht);
+                    },
+                    function(){
+                        showInfoWinError("评分项目获取失败！");
+                    }
+            );
+        }
+//        function summary(index){//统计当前列的总分
+//            var count=0;
+//            $("#markDetail tr td:nth-child("+(index+1)+")").each(function(i,ele){
+//                count+=parseInt($(this).text());
+//            });
+//            $("#summary tr td:nth-child("+(index+1)+")").text(count);
+//        }
+        function clearAll(){//清空当前还是全部
+            top.openAuiDialog("callback","提示","确定要清空所有评分吗？",function(){},function(){
+                initResult();
+                $("#option_list input").val("");
+            });
+        }
+//        提交投票结果
+        function submitVoteResult(){
+            for(var j= 0;j<voteUsers.length;j++){
+                for(var k=0;k<options.length;k++){
+                    if(markResult[voteUsers[j]][options[k].id]==""){
+                        $("#user_list li:eq("+j+")").addClass("hover").siblings("li").removeClass("hover");
+                        for(var id in markResult[voteUsers[j]]){
+                            $("#"+id).val(markResult[voteUsers[j]][id]);
+                        }
+                        $("section").animate({scrollTop:$("#"+options[k].id).offset().top},300,function(){
+                            $("#"+options[k].id).parents(".option_score").addClass("shakeing");
+                        });
+                        return;
+                    }
+                }
+            }
+            alert("提交");
+        }
+        function initResult(){
+            for(var j= 0;j<voteUsers.length;j++){
+                markResult[voteUsers[j]]={};
+                for(var k=0;k<options.length;k++){
+                    markResult[voteUsers[j]][options[k].id]="";
+                }
+            }
+//            console.log(markResult);
+        }
+    </script>
+</head>
+<body class="marking">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">评分</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(11,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="panel panel-default">
+        <div id="templateName" class="panel-heading bg_right doing">123</div>
+        <div class="panel-body">
+            <!--<table class="marking_table table table-responsive table-bordered">-->
+                <!--<thead>-->
+                <!--<tr id="voteUsers">-->
+                    <!--<td class="slash">-->
+                        <!--<span class="optioned">被选人</span>-->
+                        <!--<span class="option">选项</span>-->
+                    <!--</td>-->
+                <!--</tr>-->
+                <!--</thead>-->
+                <!--<tbody id="markDetail">-->
+
+                <!--</tbody>-->
+                <!--<tfoot id="summary">-->
+
+                <!--</tfoot>-->
+            <!--</table>-->
+
+            <p class="no_margin text-right">请输入0-100的整数</p>
+            <div class="row">
+                <div class="col-xs-3">
+                    <div class="vote_users">
+                        <h5 class="no_margin">被投人</h5>
+                        <ul id="user_list" class="list-unstyled no_margin user_list">
+                            <!--<li class="pointer">张孟会</li>-->
+                            <!--<li class="pointer">齐艳</li>-->
+                            <!--<li class="pointer">郑光军</li>-->
+                            <!--<li class="pointer">郑光军</li>-->
+                            <!--<li class="pointer">郑光军</li>-->
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-xs-9">
+                    <ul id="option_list" class="no_margin list-unstyled overflow option_list">
+                        <!--<li class="left text-center">-->
+                            <!--<div class="option_score">-->
+                                <!--<i></i>-->
+                                <!--<input type="text" placeholder="请输入分数"/>-->
+                            <!--</div>-->
+                            <!--<span class="option_name ellipsis">-->
+                                <!--选项-->
+                            <!--</span>-->
+                        <!--</li>-->
+                    </ul>
+                    <p class="text-center btns">
+                        <a class="clc" onclick="clearAll();" href="javascript:void(0);">清空</a>
+                        <a class="sub" href="javascript:submitVoteResult();">提交</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

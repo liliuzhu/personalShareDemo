@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>会议列表</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./js/fullcalendar/fullcalendar.css">
+    <link rel="stylesheet" type="text/css" href="./js/fullcalendar/fullcalendar.print.css" media='print'>
+    <link href="./css/meeting_list.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" language="javascript" src="./js/fullcalendar/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" language="javascript" src="./js/fullcalendar/fullcalendar.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        var filterDate=getTimeStr(new Date().getTime(),true);//过滤的数据
+        var meetingList=null;//
+        var is_startup_password=false;
+        var data_length=10000;
+        var data_start=0;
+        $( function() {
+            updataClock(true);
+            setInterval(updataClock,10000);
+            initFullcalendar();
+        } );
+        //updata时钟模块
+        function updataClock(init){
+            var now=new Date();
+            if(init){
+                $("#system_minute").text(getTwoNumberStr(now.getMinutes()));
+                $("#system_hour").text(getTwoNumberStr(now.getHours()));
+                $("#system_day").html(now.getFullYear()+"年"+getTwoNumberStr(+now.getMonth()+1)+"月"+getTwoNumberStr(now.getDate())+"日&nbsp;&nbsp;星期"+(now.getDay()==0?"日":now.getDay()==1?"一":now.getDay()==2?"二":now.getDay()==3?"三":now.getDay()==4?"四":now.getDay()==5?"五":"六"));
+            }else if(now.getSeconds()<=10){
+//            }else{
+                $("#system_minute").text(getTwoNumberStr(now.getMinutes()));
+                if(now.getMinutes()==0){
+                    $("#system_hour").text(getTwoNumberStr(now.getHours()));
+                    if(now.getHours()==0){
+                        $("#system_day").html(now.getFullYear()+"年"+getTwoNumberStr(+now.getMonth()+1)+"月"+getTwoNumberStr(now.getDate())+"日&nbsp;&nbsp;星期"+(now.getDay()==0?"日":now.getDay()==1?"一":now.getDay()==2?"二":now.getDay()==3?"三":now.getDay()==4?"四":now.getDay()==5?"五":"六"));
+                    }
+                }
+            }
+            now=null;
+            top.reconnectSocket();
+        }
+        //初始化fullcalender
+        function initFullcalendar(){
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next,today',
+                    center: 'title',
+                    right: 'none'
+                },
+                defaultDate: new Date(),
+                selectable: true,
+                selectHelper: true,
+                editable: true,
+                unselectAuto:false,
+                eventLimit: true,
+                buttonText:{
+                    prev: '上一月',
+                    next: '下一月',
+                    today: '今天',
+                    month: '月'
+                },
+                monthNames:['01月','02月','03月','04月','05月','06月','07月','08月','09月','10月','11月','12月'],
+                dayNamesShort:['日','一','二','三','四','五','六'],
+                dayNames:['星期日','星期一','星期二','星期三','星期四','星期五','星期六'],
+                columnFormat:{
+                    day:'dddd M/d'
+                },
+                aspectRatio:1.2,
+                dayClick: function(date) {
+                    if(filterDate==getTimeStr(date,true)){
+                        return false;
+                    }
+                    $("td[data-date='"+filterDate+"']").removeAttr("style");
+                    filterDate=getTimeStr(date,true);
+                    arrangementMeetingList(filterDate);
+                },
+                eventClick:function(calEvent){
+                    if(filterDate==getTimeStr(calEvent.start,true)){
+                        return false;
+                    }
+                    $("td[data-date='"+filterDate+"']").removeAttr("style");
+                    filterDate=getTimeStr(calEvent.start,true);
+                    arrangementMeetingList(filterDate);
+                    $(".fc-cell-overlay").css('display','none');
+                    $("td[data-date='"+filterDate+"']").css({'background-color':'rgba(188,232,241,.3)'});
+                }
+            });
+            caculateMeetingCount();
+        }
+        //计算会议数量
+        function caculateMeetingCount(){
+            var aoData=[];
+            aoData.push( { "name": "meeting.meeting_title", "value": $("#search").val()} );
+            aoData.push( { "name": "iDisplayStart", "value": data_start } );
+            aoData.push( { "name": "iDisplayLength", "value": data_length } );
+            var xurl=null;
+            if(top.is_loggedin){
+                aoData.push( { "name": "meeting.status", "value":-1} );
+                xurl="/actions/Meeting.action?getMeetingListOnlyMine";
+            }else{
+                aoData.push( { "name": "meeting.status", "value":1} );//会议状态--进行中的会议
+                aoData.push( { "name": "meeting.is_not_login", "value": 1} );//允许免登录的会议
+                xurl="/actions/Meeting.action?getMeetingList";
+            }
+            sendAjaxRequest(xurl,aoData,
+                    function (obj) {
+                        var meetingInfo = meetingList = obj.aaData;
+                        var noRepeatDate = [];
+                        var message = {};
+                        meetingInfo.sort(function (a, b) {
+                            return a.meeting_time - b.meeting_time;
+                        });
+                        for (var i = 0; i < meetingInfo.length; i++) {
+                            if (i == 0) {
+                                noRepeatDate.push(meetingInfo[i]);
+                            } else {
+                                if (top.getTimeStr(meetingInfo[i].meeting_time, true) != top.getTimeStr(noRepeatDate[0].meeting_time, true)) {
+                                    message = {};
+                                    message.id = meetingInfo[i].id;
+                                    message.start = top.getTimeStr(noRepeatDate[0].meeting_time, true);
+                                    message.title = '' + noRepeatDate.length;
+                                    message.editable = false;
+                                    $("#calendar").fullCalendar("renderEvent", message, true);
+                                    noRepeatDate = [];
+                                    noRepeatDate.push(meetingInfo[i]);
+                                }
+                                else {
+                                    noRepeatDate.push(meetingInfo[i]);
+                                }
+                            }
+                            if ((i + 1) == meetingInfo.length) {
+                                message = {};
+                                message.id = meetingInfo[i].id;
+                                message.start = top.getTimeStr(noRepeatDate[0].meeting_time, true);
+                                message.title = '' + noRepeatDate.length;
+                                message.editable = false;
+                                $("#calendar").fullCalendar("renderEvent", message, true);
+                            }
+                        }
+                        arrangementMeetingList(filterDate, true);
+                    },
+                    function () {
+                        showInfoWinError("获取会议列表失败");
+                    }
+            );
+        }
+//       分类整理某个日期的会议列表
+        function arrangementMeetingList(date,init){
+//            meetingList=meetingList.sort(function(a,b){return a.meeting_time-b.meeting_time});
+            var noon=toTimestamp(date+" 12:00:00");
+            var start=toTimestamp(date+" 00:00:00");
+            var end=toTimestamp(date+" 23:59:59");
+            var am="",pm="";
+            var arr=[];
+            for(var i=0;i<meetingList.length;i++){
+                if(meetingList[i].meeting_time<=end&&meetingList[i].meeting_time>=start){
+                    arr.push(i);
+                    if(meetingList[i].meeting_time<noon){
+                        am+='<li id="'+meetingList[i].id+'" onclick="lookMeetingDetails(this,'+i+');" class="meeting_statue'+meetingList[i].status+(arr.length==1?" active":"")+'">'
+                                + '<span class="ellipsis" title="会议时间">'+getTimeStr(meetingList[i].meeting_time).slice(11)+'</span>'
+                                + '<span class="ellipsis" title="会议名称">'+meetingList[i].meeting_title+'</span>'
+                                + '<span class="ellipsis" title="会议地点">'+meetingList[i].addr+'</span>'
+                                + '</li>';
+                    }else{
+                        pm+='<li id="'+meetingList[i].id+'" onclick="lookMeetingDetails(this,'+i+');" class="meeting_statue'+meetingList[i].status+(arr.length==1?" active":"")+'">'
+                                + '<span class="ellipsis" title="会议时间">'+getTimeStr(meetingList[i].meeting_time).slice(11)+'</span>'
+                                + '<span class="ellipsis" title="会议名称">'+meetingList[i].meeting_title+'</span>'
+                                + '<span class="ellipsis" title="会议地点">'+meetingList[i].addr+'</span>'
+                                + '</li>';
+                    }
+                }
+            }
+            init&&$("#today_num").text(arr.length);
+            lookMeetingDetails("",arr[0]);
+            $("#am_list").html(am);
+            $("#pm_list").html(pm);
+        }
+        //更新会议列表
+        function updataMeetingList(){
+            $("#calendar").fullCalendar("removeEvents");
+            caculateMeetingCount();
+        }
+        /*查看某个会议并查看详情*/
+        function lookMeetingDetails(the,index){
+            if(the){
+                $(".row li.active").removeClass("active");
+                $(the).addClass("active");
+            }
+            var meetingInfo=meetingList[index]||"";
+            meetingInfo&&(is_startup_password=meetingInfo.is_startup_password==1?true:false);
+            $("#meeting_title").text(meetingInfo.meeting_title||"");
+            $("#addr").text(meetingInfo.addr||"");
+            $("#toastmaster_name").text(meetingInfo.toastmaster_name||"");
+            $("#theme").text(meetingInfo.theme||"");
+        }
+        //账号登录绑定设备号
+        function createBindRecord(callBack){
+            var aoData=[];
+            aoData.push( { "name": "meetingUser.user_code", "value": getLocalData("user_code")} );
+            aoData.push( { "name": "meetingUser.meeting_id ", "value": getLocalData("meeting_id")} );
+            aoData.push( { "name": "meetingUser.device_mac ", "value": getEquipmentSN()} );
+            var xurl="/actions/MeetingUser.action?createBindRecord";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status) {
+                            callBack && callBack();
+                        } else {
+                            showInfoWinError("账号绑定失败！"+data.msg)
+                        }
+                    },
+                    function(){
+                        showInfoWinError("账号绑定失败！");
+                    }
+            );
+        }
+        //验证会议密码
+        function testMeetingPwd(pwd){
+            var aoData=[];
+            aoData.push( { "name": "meeting.id", "value": getLocalData("meeting_id")} );
+            aoData.push( { "name": "meeting.password", "value": pwd} );
+            var xurl="/actions/Meeting.action?checkMeetingLogin";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status) {
+                            if (data.msg == "1") {
+                                if (top.is_loggedin) {//如果是账号登录
+                                    createBindRecord(function () {
+                                            top.creatWebSocket(function () {
+                                                top.openWin("function_list");
+                                            });//进入下一页
+                                    });
+                                } else {//如果是免登录
+                                    top.getUserCode();
+                                }
+                            } else {
+                                top.openAuiDialog("text", "提示", "密码错误，请联系管理员！");
+                            }
+                        } else {
+                            showInfoWinError("密码验证错误，请重试！" + data.msg);
+                        }
+                    },
+                    function () {
+                        showInfoWinError("密码验证错误，请重试！");
+                    }
+            );
+        }
+        //进入会议
+        function comeInMeeting(status){
+            if($(".right_side li.active").get(0)){
+                setLocalData("meeting_id",$(".right_side li.active").attr("id"));
+                if(!status){
+                    if(top.is_loggedin){
+                        createBindRecord(function(){
+                            top.creatWebSocket(function(){top.openWin("function_list"); });//进入下一页
+                        });
+                    }else{
+                        top.getUserCode();
+                    }
+                }else{
+                    top.openAuiDialog("input","输入会议密码","请输入会议密码",function(){},function(ret){testMeetingPwd(ret.text)},"取消","立即加入");
+                }
+            }else{
+                top.openAuiDialog("text","提示","请选择要参加的会议！");
+            }
+        }
+    </script>
+</head>
+<body class="meeting_list">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png" >
+    </a>
+    <div class="header_title">会议列表</div>
+    <ul class="header_btn_list">
+        <!--<li>-->
+            <!--<img src="./img/icon-menu.png" onclick="setFixedNav(4)">-->
+        <!--</li>-->
+    </ul>
+</header>
+<section class="text-center">
+    <!--<div class="text-right meeting_status">-->
+        <!--<ul class="list-inline list-unstyled no_margin">-->
+            <!--<li><span></span>未开始</li>-->
+            <!--<li><span></span>召开中</li>-->
+            <!--<li><span></span>已结束</li>-->
+        <!--</ul>-->
+    <!--</div>-->
+    <div class="container_box">
+        <div class="left_side">
+            <div class="system_time">
+                <h1 class="no_margin"><span id="system_hour">10</span><span style="display: inline-block;padding: 0 0.5rem;">:</span><span id="system_minute">00</span></h1>
+                <p class="no_margin" id="system_day">2017年02月17日&nbsp;&nbsp;星期五</p>
+            </div>
+            <div class="system_date">
+                <p class="text-left no_margin">您今天有<a href="javascript:void(0);" id="today_num">0</a>个会议</p>
+                <div class="serch_box">
+                    <input placeholder="搜索会议名称" type="text" id="search" onkeydown="if(event.keyCode==13){updataMeetingList()}"/>
+                    <a onclick="updataMeetingList();" href="javascript:void(0);">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </a>
+                </div>
+                <!--<div id="datepicker"></div>-->
+                <div id="calendar"></div>
+            </div>
+        </div><div class="right_side">
+            <div class="right_box flex flex_direction_vertical">
+                <div class="row no_margin">
+                    <div class="col-xs-6 no_padding panel panel-default">
+                        <div class="panel-heading no_padding am">
+                            上午
+                        </div>
+                        <div class="panel-body no_padding">
+                            <ul id="am_list" class="list-unstyled meeting_list_item overflow text-left no_margin">
+                                <!--<li class="active meeting_statue0">-->
+                                <!--<span>08:30-10:30</span><br/>-->
+                                <!--<span>会议标题</span><br/>-->
+                                <!--<span>会议地址</span>-->
+                                <!--</li>-->
+                                <!--<li class="active meeting_statue1">-->
+                                    <!--<span>08:30-10:30</span><br/>-->
+                                    <!--<span>会议标题</span><br/>-->
+                                    <!--<span>会议地址</span>-->
+                                <!--</li>-->
+                                <!--<li class="active meeting_statue2">-->
+                                    <!--<span>08:30-10:30</span><br/>-->
+                                    <!--<span>会议标题</span><br/>-->
+                                    <!--<span>会议地址</span>-->
+                                <!--</li>-->
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 no_padding panel panel-default">
+                        <div class="panel-heading no_padding pm">
+                            下午
+                        </div>
+                        <div class="panel-body no_padding">
+                            <ul id="pm_list" class="list-unstyled meeting_list_item overflow text-left no_margin">
+                                <!--<li class="active">-->
+                                <!--<span>08:30-10:30</span><br/>-->
+                                <!--<span>会议标题</span><br/>-->
+                                <!--<span>会议地址</span>-->
+                                <!--</li>-->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default no_margin flex_child flex flex_direction_vertical ">
+                    <div class="panel-heading text-left">
+                        会议详情
+                        <div class="order_control middle">
+                            <a class="style3" onclick="comeInMeeting(is_startup_password);" style="padding: 6px 20px;" href="javascript:void(0);">参加会议</a>
+                        </div>
+                    </div>
+                    <div class="panel-body flex_child flex">
+                        <ul class="text-left no_margin overflow meeting_detail list-unstyled flex_child flex flex_direction_vertical">
+                            <li>
+                                <span>会议名称</span>
+                                <span id="meeting_title"></span>
+                            </li>
+                            <li>
+                                <span>会议地点</span>
+                                <span id="addr"></span>
+                            </li>
+                            <li>
+                                <span>会议主持人</span>
+                                <span id="toastmaster_name"></span>
+                            </li>
+                            <li class="flex_child">
+                                <span>会议主题</span>
+                                <span id="theme"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

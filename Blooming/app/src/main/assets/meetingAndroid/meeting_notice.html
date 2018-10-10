@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>会议公告</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="css/meeting_notice.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        var announcementInfoList;
+        $(function(){
+            getAnnouncementInfoList();
+        });
+        //获取本次会议的相关电子公告
+        function getAnnouncementInfoList(){
+            var aoData=[];
+            aoData.push( { "name": "announcementInfo.announcement_title", "value": ""} );
+            aoData.push( { "name": "announcementInfo.meeting_id", "value":getLocalData("meeting_id")} );
+            var xurl="/actions/Announcement.action?getAnnouncementInfoList";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        announcementInfoList = data.aaData;
+                        announcementInfoList.length>0&&showAnnouncementInfo(0);
+                        for (var i = 0, ht = ''; i < announcementInfoList.length; i++) {
+                            ht += '<li onclick="showAnnouncementInfo(\'' + i + '\',this);" ' + (i == 0 && 'class="active"') + '>'
+                                    + '<p class="overflow no_margin">'
+                                    + '<span class="left">#' + (i + 1) + '</span>'
+                                    + '<span class="right">' + getTimeStr(announcementInfoList[i].create_time, true) + '</span>'
+                                    + '</p>'
+                                    + '<h5 class="no_margin">' + announcementInfoList[i].announcement_title + '</h5>'
+                                    + '</li>';
+                        }
+                        $("#notice_list").html(ht);
+                    },
+                    function () {
+                        showInfoWinError("会议公告获取失败！");
+                    }
+            );
+        }
+//        //获取会议公告内容
+//        function getAnnouncementInfoById(infoId){
+//            var aoData=[];
+//            aoData.push( { "name": "announcementInfo.id", "value": infoId } );
+//            var xurl="/actions/Announcement.action?getAnnouncementInfoById";
+//            sendAjaxRequest(xurl,aoData,function(data){
+//                try{
+//                    if(){
+//
+//                    }else{
+//
+//                    }
+//                }catch(e){
+//
+//                }
+//            });
+//        }
+        //展示公告内容
+        function showAnnouncementInfo(index,the){
+            the&&$(the).addClass("active").siblings("li").removeClass("active");
+            $("#announcement_title").html(announcementInfoList[index].announcement_title);
+//            $("#notice_content>h3").html(announcementInfoList[index].announcement_title);
+            $("#notice_content>div").html(announcementInfoList[index].announcement_desc);
+        }
+    </script>
+</head>
+<body class="meeting_notice">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">会议公告</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(5,event)">
+        </li>
+    </ul>
+</header>
+<section>
+    <div class="bg_modal"></div>
+    <div class="center_box">
+        <div class="row no_margin">
+            <div class="col-xs-5 text-left no_margin no_padding">
+                <p class="notice_title no_margin">会议公告列表</p>
+                <ul id="notice_list" class="list-unstyled no_margin notice_list scrolling">
+                    <!--<li>-->
+                        <!--<p class="overflow no_margin">-->
+                            <!--<span class="left">#01</span>-->
+                            <!--<span class="right">2016-11-15</span>-->
+                        <!--</p>-->
+                        <!--<h5 class="no_margin">关于申请无纸化信息业务的请示</h5>-->
+                    <!--</li>-->
+                    <!--<li class="active">-->
+                        <!--<p class="overflow no_margin">-->
+                            <!--<span class="left">#02</span>-->
+                            <!--<span class="right">2016-11-15</span>-->
+                        <!--</p>-->
+                        <!--<h5 class="no_margin">关于申请无纸化信息业务的请示</h5>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<p class="overflow no_margin">-->
+                            <!--<span class="left">#03</span>-->
+                            <!--<span class="right">2016-11-15</span>-->
+                        <!--</p>-->
+                        <!--<h5 class="no_margin">关于申请无纸化信息业务的请示</h5>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<p class="overflow no_margin">-->
+                            <!--<span class="left">#04</span>-->
+                            <!--<span class="right">2016-11-15</span>-->
+                        <!--</p>-->
+                        <!--<h5 class="no_margin">关于申请无纸化信息业务的请示</h5>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<p class="overflow no_margin">-->
+                            <!--<span class="left">#05</span>-->
+                            <!--<span class="right">2016-11-15</span>-->
+                        <!--</p>-->
+                        <!--<h5 class="no_margin">关于申请无纸化信息业务的请示</h5>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<p class="overflow no_margin">-->
+                            <!--<span class="left">#06</span>-->
+                            <!--<span class="right">2016-11-15</span>-->
+                        <!--</p>-->
+                        <!--<h5 class="no_margin">关于申请无纸化信息业务的请示</h5>-->
+                    <!--</li>-->
+                </ul>
+            </div>
+            <div class="col-xs-7 text-left no_margin no_padding">
+                <div class="notice_tools">
+                    <!--<a href="javascript:void(0);">-->
+                        <!--<img src="img/icon-toolsmoreqianbi@2x.png"/>-->
+                    <!--</a>-->
+                    <!--<a href="javascript:void(0);">-->
+                        <!--<img src="img/icon-toolsmoremaobi@2x.png"/>-->
+                    <!--</a>-->
+                    <!--<a href="javascript:void(0);">-->
+                        <!--<img src="img/icon-toolsmoredian@2x.png"/>-->
+                    <!--</a>-->
+                    <!--<a href="javascript:void(0);">-->
+                        <!--<img src="img/icon-toolsmoretupian@2x.png"/>-->
+                    <!--</a>-->
+                    <!--<a href="javascript:void(0);">-->
+                        <!--<img src="img/icon-toolsmoreshanchu@2x.png"/>-->
+                    <!--</a>-->
+                    <!--<a href="javascript:void(0);" class="right text-center">-->
+                        <!--保存-->
+                    <!--</a>-->
+                    <h3 id="announcement_title" class="ellipsis">无会议公告</h3>
+                </div>
+                <div class="notice_content scrolling" id="notice_content">
+                    <div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

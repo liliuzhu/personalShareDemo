@@ -1,0 +1,74 @@
+.call_service .center_box {
+    display: inline-block;
+    position: relative;
+    z-index: 0;
+    vertical-align: middle;
+    background-color: #fff;
+    height:100%;
+    width:100%;
+}
+.call_service .service_list{
+    margin-top: 40px;
+}
+.call_service .service_list li{
+    display: none;
+    margin:20px 0;
+    width:25%;
+    float:left;
+}
+.call_service .service_list li>div{
+    position:relative;
+    margin:auto;
+    width:100px;
+    height:100px;
+    border:2px solid #D9DEE4;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.call_service .service_list li>div>img{
+    display: block;
+    height: 40%;
+    margin:15px auto;
+}
+.call_service .service_list li>div>a{
+    color: #5c5c5c;
+}
+.call_service .service_list li>div:after{
+    content: "";
+    display:none;
+    position:absolute;
+    width:16px;
+    height:16px;
+    border-left:2px solid #D9DEE4;
+    border-bottom:2px solid #D9DEE4;
+    right:0;
+    top:0;
+}
+.call_service .service_list li>div:hover:after{
+    display:inline-block;
+}
+.call_service .service_list li>div.hover:after{
+    display:inline-block;
+    background:url(../img/icon-hujiaoqueren@2x.png) no-repeat center center;
+    background-size: 100% 100%;
+}
+.call_service textarea{
+    margin: 20px 0;
+    display:inline-block;
+    width:88%;
+    height:100px;
+    background-color: #fbfbfb;
+    border:2px solid #eaeaea;
+    border-radius: 8px;
+    resize: none;
+}
+.call_service a.ok_btn{
+    display: inline-block;
+    width: 140px;
+    height:50px;
+    font-size: 16px;
+    line-height: 50px;
+    color: #fff;
+    background-color: #FF4134;
+    border-radius: 100px;
+}

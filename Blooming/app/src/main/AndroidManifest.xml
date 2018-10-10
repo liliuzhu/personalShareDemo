@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.helpyouworkeasy.blooming">
+    <!--app权限-->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!--获取internet访问权限-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!--获取网络信息状态，如当前的网络连接是否有效-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <!--读取电话状态-->
+    <uses-permission android:name="android.permission.BATTERY_STATS"/>
+    <!--获取电池电量统计信息-->
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="WabAppDemo"
+        android:supportsRtl="true"
+        android:hardwareAccelerated ="true"
+        android:theme="@android:style/Theme.NoTitleBar" >
+        <!--android:theme="@style/AppTheme">-->
+        <activity android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|navigation|screenSize"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:hardwareAccelerated="true"
+            android:label="WabAppDemo" >
+            <!--screenOrientation 屏幕的方向  landscape是横向，portrait是纵向 -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

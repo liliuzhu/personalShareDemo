@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>即时通讯</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/chat.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jquery.qqFace.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+       /*测试部分
+         $(function(){
+             $('.emotion').qqFace({
+                 assign:'send_message', //给输入框赋值
+                 path:'face/'    //表情图片存放的路径
+             });
+         });
+         $(function(){
+             $(".send_button").click(function(){
+             var str = $("#send_message").val();
+//             $("#show").html(replace_em(str));
+             });
+             });
+             function replace_em(str){
+             str = str.replace(/\</g,'<；');
+             str = str.replace(/\>/g,'>；');
+             str = str.replace(/\n/g,'<；br/>；');
+             str = str.replace(/\[em_([0-9]*)\]/g,'<img src="face/$1.gif" border="0" />');
+             return str;
+         }
+         */
+        var socket = null;
+        var socketServerUrl="ws://"+getLocalData('meeting_server_IP')+"/meeting/websocket";//socket地址
+        var meeting_id=getLocalData("meeting_id");//会议ID
+        var user_code=getLocalData("user_code");//当前登录用户账号
+        var meeting_users=[];//参会人员
+        $(function(){
+            getCurrentMeetingUsers();
+            getHistoryMsg("groupChat",meeting_id);
+            $("#user_list").on("click","li",function(){
+                if(!$(this).hasClass("active")){
+                    $(this).addClass("active").siblings("li.active").removeClass("active");
+                    $("#message_list").html('');
+                    if($(this).attr('usercode')=="group"){
+                        getHistoryMsg("groupChat",meeting_id);
+                    }else{
+                        getHistoryMsg("singleChat",user_code,$(this).attr('usercode'));
+                    }
+                }
+
+            });
+        });
+        function sendMyMessage(){//发送我的信息
+            if($("#send_message").val()==""){
+                top.openCustomTap("发送的信息不可为空!",2000);
+                return false;
+            }
+            if(user_code==$('#user_list li.active').attr("userCode")){
+                top.openCustomTap("不可向自己发送信息!",2000);
+                return false;
+            }
+//            $("#send_message").focus();//获得焦点
+            var now=new Date();
+            createMyChatHtml(getTwoNumberStr(now.getMonth()+1)+'-'+getTwoNumberStr(now.getDate())+' '+getTwoNumberStr(now.getHours())+':'+getTwoNumberStr(now.getMinutes()),user_code,$("#send_message").val());
+			sendMsg();
+            $("#send_message").val("");//清空输入框
+            scrollToBottom();//滑动到底部
+        }
+        //获取当前会议所有参会人员列表
+        function getCurrentMeetingUsers(){
+            var aoData=[];
+            aoData.push( { "name": "meetingUser.index_num", "value": -1} );
+            aoData.push( { "name": "meetingUser.status", "value": -1} );
+            aoData.push( { "name": "meetingUser.meeting_id", "value":meeting_id} );
+            sendAjaxRequest("/actions/MeetingUser.action?getMeetingUserList",aoData,
+                    function (data) {
+                        var ht = "";
+                        var userList = data.aaData;
+                        $("#chat_people_count").text("群聊(" + userList.length + ")");
+                        for (var i = 0; i < userList.length; i++) {
+                            meeting_users.push(userList[i].user_code);
+                            ht += '<li userCode="' + userList[i].user_code + '" id="userList_' + userList[i].user_code + '"><img class="left" src="img/icon-yonghuliebiao@2x.png"/>'
+                                    + '<div class="left text-left user_name">'
+                                    + '<p class="no_margin">' + userList[i].user_name + '</p>'
+                                    + '<span class="ellipsis">我是我是我是我是</span></div>'
+                                    + '<div class="right user_time">'
+                                    + '<p class="no_margin">...</p>'
+                                    + '<span>5min</span></div></li>';
+                        }
+                        $("#user_list").append(ht);
+                        getWebSocketMessage(top.webSocketInitData);
+                    },
+                    function () {
+                        showInfoWinError("参会人员名单获取失败！");
+                    }
+            );
+        }
+        //获取聊天记录
+        function getHistoryMsg(chatType,fromName,toName){
+            var aoData=[];
+            var xurl="/actions/HistoryMsg.action?getGroupChatMsg";
+            if(chatType=='singleChat'){
+                aoData.push( { "name": "historyMsg.meetingId", "value":meeting_id} );
+                aoData.push( { "name": "historyMsg.fromName", "value":fromName} );
+                aoData.push( { "name": "historyMsg.toName", "value":toName} );
+                xurl="/actions/HistoryMsg.action?getSingleChatMsg";
+                sendAjaxRequest(xurl,aoData,
+                        function (obj) {
+                            var chatArr = obj.aaData;
+                            for (var i = 0; i < chatArr.length; i++) {
+                                if (chatArr[i].fromName == user_code) {
+                                    createMyChatHtml(getTimeStr(chatArr[i].sendTime, false).slice(5, 16), user_code, chatArr[i].content);
+                                } else {
+                                    createOtherChatHtml(getTimeStr(chatArr[i].sendTime, false).slice(5, 16), chatArr[i].fromName, chatArr[i].content);
+                                }
+                            }
+                        },
+                        function () {
+                            showInfoWinError("聊天记录获取失败！");
+                        }
+                );
+            }else{
+                aoData.push( { "name": "historyMsg.meetingId", "value":meeting_id} );
+                sendAjaxRequest(xurl,aoData,
+                        function (obj) {
+                            var chatArr = obj.aaData;
+                            for (var i = 0; i < chatArr.length; i++) {
+                                if (chatArr[i].fromName == user_code) {
+                                    createMyChatHtml(getTimeStr(chatArr[i].sendTime, false).slice(5, 16), user_code, chatArr[i].content);
+                                } else {
+                                    createOtherChatHtml(getTimeStr(chatArr[i].sendTime, false).slice(5, 16), chatArr[i].fromName, chatArr[i].content);
+                                }
+                            }
+                        },
+                        function () {
+                            showInfoWinError("聊天记录获取失败！");
+                        }
+                );
+            }
+        }
+        //接收websoket信息
+        function getWebSocketMessage(data){
+            if(data.msgType=="onLineUser"){//设置在线人员
+                isOnlineUser(data.onLineUser.split(","));
+            }else{
+                var msg_type = data.msgType;
+                var fromUserCode = data.fromName;
+                var widthChatUser=$('#user_list li.active').attr("userCode");
+                if(fromUserCode!=user_code&&((msg_type=='singleChat'&&fromUserCode==widthChatUser)||(msg_type=='groupChat'&&widthChatUser=='group'))){
+                    createOtherChatHtml(getTimeStr(data.sendTime,false).slice(5,16),data.fromName,data.content);
+                }
+            }
+        }
+       //创建聊天内容他人/自己
+        function createOtherChatHtml(chatTime,chatUserCode,chatContent){
+            var ht="";
+            ht+='<li class="user_other"><div class="left user_photo text-left">'
+            +'<img src="img/icon-yonghuliebiao@2x.png"/>'
+            +'<p class="no_margin">'+chatTime+'</p></div>'
+            +'<div class="left text-left user_content">'
+            +'<span>'+chatUserCode+'</span>'
+            +'<p class="no_margin text-left relative">'
+            +chatContent+'</p></div></li>';
+            $("#message_list").append(ht);
+            scrollToBottom();
+        }
+        function createMyChatHtml(chatTime,chatUserCode,chatContent){
+            var ht="";
+            ht+='<li class="user_me"><div class="right user_photo text-right">'
+            +'<img src="img/icon-yonghuliebiao@2x.png"/>'
+            +'<p class="no_margin">'+chatTime+'</p></div>'
+            +'<div class="right text-right user_content">'
+            +'<span>'+chatUserCode+'</span>'
+            +'<p class="no_margin text-left relative">'
+            +chatContent+'</p></div></li>';
+            $("#message_list").append(ht);
+            scrollToBottom();
+        }
+        //是否在线
+        function isOnlineUser(online_meeting_users){
+			$('#user_list li').removeClass("online");
+		    for(var i=0;i<online_meeting_users.length;i++)
+            {
+				if(meeting_users.join(",").indexOf(online_meeting_users[i])!=-1){
+                    $("#userList_"+online_meeting_users[i]).addClass("online");
+				}
+			}
+        }
+        //发送信息
+        function sendMsg(){
+            var fromName =user_code;//发送人账号
+            var toName =$('#user_list li.active').attr("userCode");//被发送人
+            var content =$("#send_message").val().replace(/\n+/g,"");//发送内容
+            var aoData=null;
+            if(toName=="group"){//群聊
+                aoData={"msgType":"groupChat","fromName":fromName,"meetingId":meeting_id,"content":content};
+            }else{//单聊
+                aoData={"msgType":"singleChat","fromName":fromName,"toName":toName,"meetingId":meeting_id,"content":content};
+            }
+            top.sendWebSocketMsg(aoData);
+        }
+        //滑动到底部
+        function scrollToBottom(){
+            $("#chat_message").scrollTop($("#message_list").height());
+        }
+    </script>
+</head>
+<body class="chat">
+<header class="not_user_select">
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">实时通讯</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(10,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center chat overflow">
+    <div class="user_list left">
+        <div class="no_margin">
+            <img src="img/icon-yonghuliebiao@2x.png"/>
+            <span>用户列表</span>
+        </div>
+        <ul id="user_list" class="list-unstyled">
+            <li userCode="group" id="userList_group" class="active">
+                <img class="left" src="img/icon-yonghuliebiao@2x.png"/>
+                <div class="left text-left user_name">
+                    <p id="chat_people_count" class="no_margin"></p>
+                    <span class="ellipsis">我是我是我是我是</span>
+                </div>
+                <div class="right user_time">
+                    <p class="no_margin">...</p>
+                    <span>5min</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="chat_panel right">
+        <div class="chat_message" id="chat_message">
+            <ul class="list-unstyled no_margin" id="message_list">
+            </ul>
+        </div>
+        <div id="show"></div>
+        <div class="user_prompt text-left">
+            <!--<span class="emotion"></span>-->
+            <textarea id="send_message" class="input"  placeholder="填写你要输入的内容..." onkeydown="if(event.keyCode==13) sendMyMessage();"></textarea>
+            <div>
+                <a class="send_button right" href="javascript:sendMyMessage();">发&nbsp;&nbsp;送</a>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

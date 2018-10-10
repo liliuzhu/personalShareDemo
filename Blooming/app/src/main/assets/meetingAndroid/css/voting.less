@@ -1,0 +1,232 @@
+.voting{
+  /*投票中*/
+  .panel-body{
+    padding: 40px;
+  }
+
+  .indent2{
+        padding-bottom: 30px;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #ddd;
+        line-height: 25px;
+        font-size: 18px;
+  }
+  .option_list{
+    width: 80%;
+    margin: 30px auto;
+    font-size: 1.5rem;
+    li{
+
+      -webkit-flex-wrap:nowrap;
+      -o-flex-wrap:nowrap;
+      -moz-flex-wrap:nowrap;
+      -ms-flex-wrap:nowrap;
+      flex-wrap:nowrap;
+
+      -webkit-justify-content:center;
+      -o-justify-content:center;
+      -moz-justify-content:center;
+      -ms-justify-content:center;
+      justify-content:center;
+
+      -webkit-align-content:center;
+      -o-align-content:center;
+      -moz-align-content:center;
+      -ms-align-content:center;
+      align-content:center;
+
+      -webkit-align-items:center;
+      -o-align-items:center;
+      -moz-align-items:center;
+      -ms-align-items:center;
+      align-items:center;
+    }
+
+    .options{//选项内容
+      @size:30px;
+      position: relative;
+      input{
+        width: @size;
+        height: @size;
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        margin-top: -@size/2;
+        opacity: 0.3;
+      }
+      label{
+        display: inline-block;
+        padding:12px 10px 12px @size+10;
+        &:before,&:after{
+          content: "";
+          display: inline-block;
+          position: absolute;
+        }
+        &:before{
+          height: @size;
+          width: @size;
+          background-color: #fff;
+          border-radius: 5px;
+          left: 0;
+          top: 50%;
+          margin-top: -@size/2;
+          border: 1px solid #aaa;
+        }
+        &:after{
+          height: @size*2/3;
+          width: @size*2/3;
+
+          background-color: #fff;
+          border-radius: 3px;
+          left: 0;
+          top: 50%;
+          margin-left: @size/6;
+          margin-top: -@size/3;
+        }
+      }
+      input[type="radio"]{
+        &+label{
+          &:before{
+            border-radius: 50%;
+          }
+          &:after{
+            border-radius: 50%;
+          }
+        }
+        &:checked+label{
+          &:after{
+            background-color: #FF4135;
+          }
+        }
+      }
+      input[type="checkbox"]{
+        &:checked+label{
+          &:after{
+            background-color: #FF4135;
+          }
+        }
+      }
+    }
+    .option_chart{//选项图表
+      @calc:5rem;
+      .option_votes{
+        float: left;
+        width: @calc;
+        font-size: 1.2rem;
+      }
+      .totle{
+        float: left;
+        width:-webkit-calc(~"100% - @{calc}");
+        width:-moz-calc(~"100% - @{calc}");
+        width:-o-calc(~"100% - @{calc}");
+        width:-ms-calc(~"100% - @{calc}");
+        width:calc(~"100% - @{calc}");
+        background-color: #F5F5F5;
+        height: 1.4rem;
+        border-radius: 10px;
+        .voted{
+          display: block;
+          background-color: #FF4236;
+          width: 20%;
+          height: 100%;
+          border-radius: inherit;
+        }
+      }
+    }
+    .option_votes{//选项得票数
+
+    }
+  }
+
+
+  //.vote_mode1{
+  //  /*模式一*/
+  //  display: none;
+  //  .indent2{
+  //    padding-bottom: 40px;
+  //    margin-bottom: 40px;
+  //    border-bottom: 1px solid #ddd;
+  //    line-height: 25px;
+  //    font-size: 18px;
+  //  }
+  //  li{
+  //    min-width: 50%;
+  //    max-width: 100%;
+  //    float: left;
+  //    text-align: left;
+  //    line-height: 30px;
+  //    padding:15px 0 15px 10%;
+  //    font-size: 20px;
+  //    input{
+  //      width: 40px;
+  //      height: 40px;
+  //      border-radius: 50%;
+  //      display: inline-block;
+  //      vertical-align: middle;
+  //      margin: 0 15px;
+  //    }
+  //  }
+  //}
+  //.vote_mode2{
+  //  display: none;
+  //  /*模式二*/
+  //  .table-bordered tr>td{
+  //    vertical-align: middle ;
+  //  }
+  //  .pointer,.summary{
+  //    font-size: 22px;
+  //    color: #FF4134;
+  //  }
+  //  table{
+  //    table-layout: fixed;
+  //  }
+  //  thead tr:first-child{
+  //    background-color: #F5F5F5;
+  //  }
+  //  tr>td:first-child{
+  //    background-color: #F5F5F5;
+  //  }
+  //  td{
+  //    height: 60px;
+  //    font-size: 18px;
+  //  }
+  //  .slash{
+  //    padding: 0;
+  //    width: 160px;
+  //    height: 80px;
+  //    position: relative;
+  //    background: #EAEAEA url(../img/slash.png) no-repeat center center;
+  //    background-size: 100% 100%;
+  //  }
+  //  .optioned{
+  //    position: absolute;
+  //    top: 10%;
+  //    right:10%;
+  //  }
+  //
+  //  .option{
+  //    position: absolute;
+  //    bottom: 10%;
+  //    left:10%;
+  //  }
+  //}
+  /*提交，清空*/
+  .btns{
+    margin: 50px 0 10px;
+    a{
+      padding: 8px 35px;
+      margin: 0 10px;
+      border-radius: 16px;
+      border: 1px solid #F55146;
+      letter-spacing: 3px;
+      color: #fff;
+      background-color: #F55146;
+    }
+    .clc{
+      color: #F55146;
+      background-color: #fff;
+    }
+  }
+}

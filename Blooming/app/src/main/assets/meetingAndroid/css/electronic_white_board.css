@@ -1,0 +1,16 @@
+.sign_in_content{
+    height:100%;
+    padding-bottom: 60px;
+    background-color: #fff;
+    position: relative;
+}
+.canvas_box,.canvas_box canvas{
+    height: 100%;
+    width: 100%;
+    position: relative;
+    top:0;
+    left: 0;
+}
+.canvas_box .background{
+    position: absolute;
+}

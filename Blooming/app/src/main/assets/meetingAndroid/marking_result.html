@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>评分结果</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/marking_result.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+</head>
+<body class="marking_result">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">评分结果</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(11,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="panel panel-default">
+        <div class="panel-heading">演讲建议评分表</div>
+        <div class="panel-body">
+            <!--<ul class="list-unstyled list-inline overflow option_list">-->
+                <!--<li>-->
+                    <!--<div class="option">-->
+                        <!--<div style="height: 30%;"></div>-->
+                        <!--<span>30%</span>-->
+                    <!--</div>-->
+                    <!--<div class="title">某某某</div>-->
+                <!--</li><li>-->
+                <!--<div class="option">-->
+                    <!--<div style="height: 30%;"></div>-->
+                    <!--<span>30%</span>-->
+                <!--</div>-->
+                <!--<div class="title">某某某</div>-->
+            <!--</li><li>-->
+                <!--<div class="option">-->
+                    <!--<div style="height: 30%;"></div>-->
+                    <!--<span>30%</span>-->
+                <!--</div>-->
+                <!--<div class="title">某某某</div>-->
+            <!--</li><li>-->
+                <!--<div class="option">-->
+                    <!--<div style="height: 30%;"></div>-->
+                    <!--<span>30%</span>-->
+                <!--</div>-->
+                <!--<div class="title">某某某</div>-->
+            <!--</li><li>-->
+                <!--<div class="option">-->
+                    <!--<div style="height: 30%;"></div>-->
+                    <!--<span>30%</span>-->
+                <!--</div>-->
+                <!--<div class="title">某某某</div>-->
+            <!--</li><li>-->
+                <!--<div class="option">-->
+                    <!--<div style="height: 30%;"></div>-->
+                    <!--<span>30%</span>-->
+                <!--</div>-->
+                <!--<div class="title">某某某某某某某某某某某某</div>-->
+            <!--</li>-->
+            <!--</ul>-->
+            <ul class="list-unstyled option_votes_list">
+                <li class="flex flex_direction_horizontal">
+                    <div class="flex_child text-right option_name ellipsis">张三</div>
+                    <div class="flex_child option_chart"><span></span></div>
+                    <div class="flex_child text-left option_votes ellipsis">90分</div>
+                </li>
+                <li class="flex flex_direction_horizontal">
+                    <div class="flex_child text-right option_name ellipsis">李四</div>
+                    <div class="flex_child option_chart"><span></span></div>
+                    <div class="flex_child text-left option_votes ellipsis">88分</div>
+                </li>
+                <li class="flex flex_direction_horizontal">
+                    <div class="flex_child text-right option_name ellipsis">王二</div>
+                    <div class="flex_child option_chart"><span></span></div>
+                    <div class="flex_child text-left option_votes ellipsis">89分</div>
+                </li>
+            </ul>
+            <a href="javascript:void(0);" onclick="top.closeWin($('body').attr('class'));" class="close_btn btn">关 闭</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

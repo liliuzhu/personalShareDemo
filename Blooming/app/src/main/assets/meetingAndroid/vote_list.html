@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>投票列表</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="css/vote-mark_list.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        $(function(){
+            getVoteList();
+        });
+        //        获取投票列表
+        function getVoteList(){
+            var aoData=[];
+            aoData.push( { "name": "voteTemplate.meeting_id", "value":getLocalData("meeting_id")} );
+            sendAjaxRequest("/actions/MeetingVote.action?getVoteTemplateList",aoData,
+                    function (data) {
+                        var currentTime = new Date().getTime();
+                        var voteList = data.aaData;
+                        var ht = '';
+                        for (var i = 0; i < voteList.length; i++) {
+                            ht+='<li class="pointer" onclick="checkVotestatus(\''+voteList[i].id+'\',\''+voteList[i].template_type+'\');">';
+                            if (currentTime > voteList[i].end_time) {
+                                ht += '<div class="done">';
+                            } else if (currentTime >= voteList[i].start_time && currentTime <= voteList[i].end_time) {
+                                ht += '<div class="doing">';
+                            } else {
+                                ht += '<div class="no_start">';
+                            }
+                            ht+='<p class="text-left">#' + (i + 1) + '</p>'
+                                    + '<h4><a href="javascript:void(0);">' + voteList[i].template_name + '</a></h4>'
+                                    +'<p>' + top.getTimeStr(voteList[i].start_time, false) + '</p></div></li>';
+                        }
+                        $("#voteList").html(ht);
+                    },
+                    function(){
+                        showInfoWinError("投票列表获取失败！");
+                    }
+            );
+        }
+        //判断该投票是否已经投过或者过时
+        function checkVotestatus(id,type){
+            var aoData=[];
+            aoData.push( { "name": "meetingVoteResult.template_id", "value":id} );
+            aoData.push( { "name": "meetingVoteResult.meeting_id", "value":getLocalData("meeting_id")} );
+            aoData.push( { "name": "meetingVoteResult.user_code", "value":getLocalData("user_code")} );
+            sendAjaxRequest("/actions/MeetingVote.action?getMeetingVoteResultList",aoData,function(data){
+                if(data.aaData.length>0){
+//                    top.openWin(\'voting\',\'voteId=' + voteList[i].id + '&voteType=' + voteList[i].template_type + '\')
+                    top.openWin("voting_result","voteId=" + id);
+                }else{
+                    top.openWin("voting","voteId=" + id);
+                }
+            })
+        }
+    </script>
+</head>
+<body class="vote_list">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">投票</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(12,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="box">
+        <ul id="voteList" class="list-unstyled no_margin list-inline overflow">
+        </ul>
+    </div>
+</section>
+</body>
+</html>

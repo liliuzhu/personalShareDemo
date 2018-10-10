@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>我的桌牌</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/my_table.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+//        alert(window.screen.width);
+//        alert(window.screen.height);
+//        alert(window.screen.availWidth);
+//        alert(window.screen.availHeight);
+        $(function(){
+            getMyTable();
+        });
+        function getMeetinginfoById(){
+            var aoDate=[];
+            aoDate.push({"name":"meeting.id","value":getLocalData("meeting_id")});
+            var xurl="/actions/Meeting.action?getMeetingById";
+            sendAjaxRequest(xurl,aoDate,
+                    function (data) {
+                        if (data.status == true) {
+                            $("#meeting_title").text(data.body.meeting_title);
+                        }
+                        else {
+                            showInfoWinError("会议名称获取失败！"+data.msg);
+                        }
+                    }, function () {
+                        showInfoWinError("会议名称获取失败！");
+                    }
+            );
+        }
+        function getMyTable(){
+            var aoDate=[];
+            aoDate.push({"name":"meetingUser.user_code","value":getLocalData("user_code")});
+            aoDate.push({"name":"meetingUser.meeting_id","value":getLocalData("meeting_id")});
+            var xurl="/actions/MeetingUser.action?getMeetingUserTableName";
+            sendAjaxRequest(xurl,aoDate,
+                    function (data) {
+                        if (data.status == true) {
+                            var str=data.body.user_name,width=$("#user_name").width()-str.length;
+                            if(width/str.length<90&&width/str.length>40){
+                                $("#user_name").css({"font-size":width/str.length+"px","line-height":(2.8-(width/str.length)/50)*1.5+"em"});
+                            }else if(width/str.length<40){
+                                $("#user_name").css({"font-size":"40px","line-height":"3em"});
+                            }
+
+                            $("#user_name").html(str);
+                            $("#table_name").html(data.body.table_name);
+                            getMeetinginfoById();
+                        }
+                        else {
+                            showInfoWinError("桌牌信息获取失败！"+data.msg);
+                        }
+                    }, function () {
+                        showInfoWinError("桌牌信息获取失败！");
+                    }
+            );
+        }
+    </script>
+</head>
+<body class="my_table">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">我的桌牌</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(7,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center middle">
+    <div class="bg_modal"></div>
+    <div class="center_box">
+        <div class="panel no_margin panel-default small_shadow">
+            <div class="panel-heading" id="meeting_title">无纸化会议平台</div>
+            <div class="panel-body">
+                <div class="desk" id="desk">
+                    <h1 id="user_name" class="ellipsis"></h1>
+                    <span id="table_name" class="ellipsis"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

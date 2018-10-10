@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit"><!--规定360安全浏览器使用webki内核进行渲染-->
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" href="./js/fullcalendar/fullcalendar.css">
+    <link rel="stylesheet" type="text/css" href="./js/fullcalendar/fullcalendar.print.css" media='print'>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/login.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="./js/aui-dialog.js" ></script>
+    <script src="./js/jsPublic.js"></script>
+    <script type="text/javascript" src="./js/md5.js"></script>
+    <script>
+        var nextOK=true;
+        typewritingDelay=300;//输入法消失延迟时间
+        $(function(){
+            callIOSInfo();
+            equipmentInfoConfirm();
+            removeLocalData("JSESSIONID");
+            getLocalData('user_code')&&$("#user_code").val(getLocalData('user_code'));
+            getLocalData('user_pwd')&&$("#user_pwd").val(getLocalData('user_pwd'));
+            getLocalData('meeting_server_IP')&&$("#ip_config").val(getLocalData('meeting_server_IP'));
+            $(window).on("click",function(){
+                $('.ip_box').addClass('invisible');
+            });
+        });
+        function equipmentInfoConfirm(){//设备信息确认
+            var appVersion=navigator.appVersion;
+            var userAgent=navigator.userAgent;
+            if(window.android){//安卓壳子判断
+                $(".exitApp").show(0);
+                if(!appVersion.match(/pad/gi)){
+                    nextOK=false;
+                    openAuiDialog("text","提示","该应用仅限用于Android Pad",exitApp);
+                }
+            }else if(window.webkit&&window.webkit.messageHandlers){//IOS壳子判断
+                if(!userAgent.match(/iPad/gi)){
+                    nextOK=false;
+                    openAuiDialog("text","提示","该应用仅限用于iPad");
+                }
+            }else{
+                nextOK=true;
+            }
+        }
+        function ipBoxShow(){//弹出ipbox
+            setTimeout(function(){ $('.ip_box').removeClass('invisible');},0);
+        }
+        function pingServerIP(type){//测试ip地址
+            $("input").blur();
+            if(!nextOK){
+                openAuiDialog("text","提示","该应用仅限用于Pad");
+                return false;
+            }
+            if(!window.android&&!(window.webkit&&window.webkit.messageHandlers)){
+                if(!getLocalData("equipment_SN")){
+                    var equipment_SN=new Date().getTime();
+                    var random=(Math.random()*1000).toFixed(0).toString();
+                    equipment_SN+=random.length==3?random:random.length==2?"0"+random:"00"+random;
+                    setLocalData("equipment_SN",equipment_SN);
+                }
+            }
+            if($("#ip_config").val()==""){
+                setTimeout(function(){
+                    openAuiDialog('text',"警告","请设置服务器IP",ipBoxShow);
+                },typewritingDelay);
+                return false;
+            }
+            g_UrlBase="http://"+$("#ip_config").val()+"/meeting";
+            sendAjaxRequest("/actions/ProBaseUser.action?ping",[],
+                    function (obj) {
+                        if (obj.status == true) {
+                            setLocalData('meeting_server_IP', $("#ip_config").val());
+                            type ? goIndex() : visitorLogin();
+                        } else {
+                            openAuiDialog("text", "提示", "无效IP", ipBoxShow);
+                        }
+                    },
+                    function () {
+                        openAuiDialog("text", "提示", "无效IP", ipBoxShow);
+                    },
+                    false,2000);
+        }
+        function goIndex(){//前往首页
+            var userCode = $("#user_code").val();
+            var passWord = $("#user_pwd").val();
+            var aoData=[];
+            aoData.push( { "name": "user.userCode", "value": userCode } );
+            aoData.push( { "name": "user.password", "value": hex_md5(passWord) } );
+            aoData.push( { "name": "device_number", "value": getEquipmentSN() } );
+//            var xurl="/actions/System.action?signon";
+            var xurl="/actions/ProBaseUser.action?login";
+            sendAjaxRequest(xurl,aoData,
+                    function (obj) {
+                        $('.ip_box').addClass('invisible');
+                        if (obj.status == true) {
+                            setLocalData('user_code', userCode);
+                            setLocalData('user_pwd', passWord);
+                            $('#loginResult').html("<span style='color: green'>登录成功</span>");
+                            setTimeout(function () {
+                                if (window.android || (window.webkit && window.webkit.messageHandlers)) {
+                                    window.location.href = "http://" + $("#ip_config").val() + "/client/index.html?JSESSIONID=" + obj.body.jsessionid + "&meeting_server_IP=" + $("#ip_config").val() + "&user_code=" + $("#user_code").val();
+                                } else {
+                                    window.location.href = "http://" + $("#ip_config").val() + "/client/index.html?JSESSIONID=" + obj.body.jsessionid + "&meeting_server_IP=" + $("#ip_config").val() + "&user_code=" + $("#user_code").val() + "&equipment_SN=" + getEquipmentSN();
+                                }
+                            }, typewritingDelay);
+                        } else {
+                            $('#loginResult').html("登录失败:" + obj.msg);
+                        }
+                    },
+                    function () {
+                        $('#loginResult').html("登录失败");
+                    }
+            );
+        }
+        //点击设置ip
+        function setServerIp(event){
+            stopBubble(event);
+            $('.ip_box').toggleClass('invisible');
+        }
+        //游客登录
+        function  visitorLogin(){
+            setTimeout(function(){
+                if(window.android||(window.webkit&&window.webkit.messageHandlers)){
+                    window.location.href="http://"+$("#ip_config").val()+"/client/index.html?meeting_server_IP="+$("#ip_config").val()+"&login_type=not_login";
+                }else{
+                    window.location.href="http://"+$("#ip_config").val()+"/client/index.html?meeting_server_IP="+$("#ip_config").val()+"&login_type=not_login&equipment_SN="+getEquipmentSN();
+                }
+            },typewritingDelay);
+        }
+    </script>
+</head>
+<body class="login">
+<section class="text-center middle">
+    <p class="exitApp text-left">
+        <a onclick="closeApp();" class="color_inherit" href="javascript:void(0);">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+        </a>
+    </p>
+    <div class="center_box">
+        <img src="./img/logo.png" class="logo">
+        <h1>Blooming</h1>
+        <p>真视通无纸化会议系统</p>
+        <form class="text-left">
+            <label class="no_bold no_margin">登录名</label>
+            <input id="user_code" value=""  onkeydown="if(event.keyCode==13) goIndex();" type="text">
+            <label class="no_bold no_margin">密码</label>
+            <input id="user_pwd" value=""  onkeydown="if(event.keyCode==13) goIndex();" type="password">
+        </form>
+        <p id="loginResult" class="text-left loginResult"></p>
+        <p class="login_btn">
+            <a target="_self" class="small_shadow" href="javascript:void(0);" onclick="pingServerIP(true);">账号登录</a><a target="_self" class="small_shadow" onclick="pingServerIP();" href="javascript:void(0);">免登录</a>
+        </p>
+        <p><span class="glyphicon glyphicon-cog"></span> 服务器IP <b><a class="color_inherit" id="" href="javascript:void(0);" onclick="setServerIp(event);">去设置</a></b></p>
+        <div class="ip_box invisible" onclick="stopBubble(event)">
+            <input id="ip_config" type="text" value="192.168.3.2:8088" placeholder="请输入服务器IP">
+            <!--<input id="ip_config" type="text" value="10.1.7.13:81" placeholder="请输入服务器IP">-->
+        </div>
+    </div>
+    <div class="footer">
+        @ 会议系统V1.0
+    </div>
+</section>
+<div class="hide">
+    <script type="text/javascript" src="./js/custom-tap.js" ></script>
+    <script type="text/javascript" src="./js/custom-keyboard.js" ></script>
+    <script type="text/javascript" src="./js/custom-loading.js" ></script>
+    <script type="text/javascript" language="javascript" src="./js/fullcalendar/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" language="javascript" src="./js/fullcalendar/fullcalendar.min.js"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>功能列表</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/function_list.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        $(function(){
+            var ht='<li class="flex_child"><a onclick="top.openWin(\'electronic_white_board\');" href="javascript:void(0);"><img src="./img/icon-headdianzibaiban.png">电子白板</a></li>'
+                    +'<li class="flex_child"><a onclick="top.openWin(\'meeting_notice\');" href="javascript:void(0);"><img src="./img/icon-headhuiyigonggao.png">会议公告</a></li>'
+                    +'<li class="flex_child"><a href="javascript:void(0);"><img src="./img/icon-headzhenhuitong.png">真会通</a></li>'
+                    +(top.not_meetingUser?'':'<li class="flex_child"><a onclick="top.openWin(\'my_table\');" href="javascript:void(0);"><img src="./img/icon-headwodezhuopai.png">我的桌牌</a></li>')
+                    +'<li class="flex_child"><a onclick="top.openWin(\'call_service\');" href="javascript:void(0);"><img src="./img/icon-headhujiaofuwu.png">呼叫服务</a></li>'
+                    +(top.not_meetingUser?'':'<li class="flex_child"><a onclick="isOpenWin(\'sign_in\');" href="javascript:void(0);"><img src="./img/icon-headwoyaoqiandao.png">我要签到</a></li>');
+            $("#function_list").html(ht);
+            top.submitEquipmentPower(getEquipmentPower());
+        });
+        function openFunctionList(the){
+            $(the).toggleClass("open");
+            $(".nav_list").toggleClass("open");
+        }
+    </script>
+</head>
+<body class="function_list">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">功能列表</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(null,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center middle">
+    <div class="bg_modal"></div>
+    <div class="center_box">
+        <div class="row">
+            <div class="col-xs-4 text-left">
+                <div onclick="isOpenWin('file_detail');" class="big_box small_shadow">
+                    <img src="./img/illus-tongbucanhui.png"><br/>
+                    <a  href="javascript:void(0);">同步参会</a>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div onclick="isOpenWin('file_list');" class="big_box small_shadow">
+                    <img src="./img/illus-huiyiwenjian.png"><br/>
+                    <a href="javascript:void(0);">会议文件</a>
+                </div>
+            </div>
+            <div class="col-xs-4 text-right">
+                <div onclick="top.isCloseCurrentWin($('body').attr('class'));" class="big_box small_shadow">
+                    <img src="./img/illus-wenjianliebiao.png"><br/>
+                    <a href="javascript:void(0);">会议列表</a>
+                </div>
+            </div>
+        </div>
+        <div class="function_box">
+            <div class="nav_list small_shadow open">
+                <ul class="list-unstyled no_margin flex" id="function_list">
+                    <!--<li>-->
+                        <!--<a onclick="top.openWin('electronic_white_board');" href="javascript:void(0);">-->
+                            <!--<img src="./img/icon-headdianzibaiban.png"><br>-->
+                            <!--电子白板-->
+                        <!--</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<a onclick="top.openWin('meeting_notice');" href="javascript:void(0);">-->
+                            <!--<img src="./img/icon-headhuiyigonggao.png"><br>-->
+                            <!--会议公告-->
+                        <!--</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<a href="javascript:void(0);">-->
+                            <!--<img src="./img/icon-headzhenhuitong.png"><br>-->
+                            <!--真会通-->
+                        <!--</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<a onclick="top.openWin('my_table');" href="javascript:void(0);">-->
+                            <!--<img src="./img/icon-headwodezhuopai.png"><br>-->
+                            <!--我的桌牌-->
+                        <!--</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                        <!--<a onclick="top.openWin('call_service');" href="javascript:void(0);">-->
+                            <!--<img src="./img/icon-headhujiaofuwu.png"><br>-->
+                            <!--呼叫服务-->
+                        <!--</a>-->
+                    <!--</li>-->
+                    <!--&lt;!&ndash;<li>&ndash;&gt;-->
+                        <!--&lt;!&ndash;<a href="javascript:void(0);">&ndash;&gt;-->
+                            <!--&lt;!&ndash;<img src="./img/icon-headzhuomiangongxiang.png"><br>&ndash;&gt;-->
+                            <!--&lt;!&ndash;桌面共享&ndash;&gt;-->
+                        <!--&lt;!&ndash;</a>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</li>&ndash;&gt;-->
+                    <!--<li>-->
+                        <!--<a onclick="isOpenWin('sign_in');" href="javascript:void(0);">-->
+                            <!--<img src="./img/icon-headwoyaoqiandao.png"><br>-->
+                            <!--我要签到-->
+                        <!--</a>-->
+                    <!--</li>-->
+                </ul>
+            </div>
+        </div>
+        <a class="control radius open" onclick="openFunctionList(this);" href="javascript:void(0);"></a>
+    </div>
+</section>
+</body>
+</html>

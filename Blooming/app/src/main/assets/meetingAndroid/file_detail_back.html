@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0, user-scalable=no,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>同步参会-文件详情</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="css/file_detail-file_browser.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="js/scrollevents.min.js"></script>
+    <script type="text/javascript" src="./js/jsPublic.js"></script>
+    <script type="text/javascript" src="./js/file_detail.js"></script>
+    <script type="text/javascript" src="./js/custom-loading.js"></script>
+    <script>
+        var fileId=getUrlParam(document.URL,"fileId");//文件ID
+        var imageCount=getUrlParam(document.URL,"imageCount");//图片数量
+        var curPage=getUrlParam(document.URL,"curPage");//图片当前页
+        var spokesManName=decodeURIComponent(getUrlParam(document.URL,"spokesManName"));//当前主讲人姓名
+        var spokesManCode=getUrlParam(document.URL,"spokesManCode");//当前主讲人账号
+//        var operationType=getUrlParam(document.URL,"operationType");//操作类型
+        var viewportPosition={left:0,top:0};//暂存视口位置
+        var is_synchronize=curPage?true:false;//是否同步
+        var is_loaded=false;//是否加载完毕
+        //图片静态服务器地址
+        var picLoadPath=getLocalData("picLoadPath");
+        //位置变量
+        var startPosition=null,endPosition=null;
+        //换页控制变量
+        var is_canChangePage=false;
+        var canvas_boxHeight=null;
+        //双击变量
+        var clickTime=null;
+        //canvas图片数据缓存变量
+        var cacheBase64="";
+        $(function(){
+            $Parent=$("#canvas_parent");
+            canvas_boxHeight=$("#canvas_box").height();
+            openLoadingToast();//打开loading
+            initEvent();
+            $(window).click(removeSetAttr);
+            setTimeout(windowReady,600);
+        });
+        function guidePosition(index){//引导定位
+            if(index<6){
+                var $list=$(".header_btn_list");
+                var $icon=$list.children("li").eq(index).children().first();
+                $("#guide").css("transform","translate3d("+($list[0].offsetLeft+$icon[0].offsetLeft)+"px,0,0)").attr("class","guide guide"+index).show(0);
+            }else{
+                $("#guide").css({"transform":"none"}).attr("class","guide guide"+index).show(0);
+            }
+        }
+        function coloeguide(){//关闭引导
+            $("#guide").hide(0);
+            $(".aui-mask").removeClass("aui-mask-in").addClass("aui-mask-out").removeClass("aui-mask-out");
+        }
+        function windowReady(){
+            initFilePicList();
+            if(is_synchronize){//如果同步
+                $("#header_title").text("同步参会");
+                if(spokesManCode==getLocalData("user_code")){
+                    toggleImgStrokeOrFill($("#applySpeakIcon")[0],true);
+                }else{
+                    $("#applySpeakIcon").addClass("grayscale");
+                }
+                $("#spokesManName").text("主讲人:"+spokesManName);
+            }
+            else if(top.is_spokesman){
+                is_synchronize=true;
+                applySpeak(true);
+            }else{
+                isHasHost(true);
+            }
+            $("#file_img_list").on("click","div",function(e){
+                if(is_synchronize){//是否同步，同步的话只能由主讲人控制
+                    if(!$(this).hasClass("this")&&top.is_spokesman&&is_canChangePage){
+                        is_canChangePage=false;
+                        $(this).addClass("this").parent("li").siblings("li").children(".this").removeClass("this");
+                        changePosition(0,0,true);
+                        changeBackgroundImg(getLabelImageListOnly);
+                        sendChangeBackgroundImg();
+                    }
+                }else{//不同步的话，可以随意的查看
+                    if(!$(this).hasClass("this")){
+                        $(this).addClass("this").parent("li").siblings("li").children(".this").removeClass("this");
+                        changePosition(0,0,true);
+                        changeBackgroundImg();
+                    }
+                }
+            });
+            //滚动停止事件
+            $("#canvas_box").on("scrollstop",function(){
+                is_synchronize&&top.is_spokesman&&sendMoveViewport();
+            });
+        }
+        function setCacheBase64(callBack){//设置图片的缓存
+            cacheBase64=canvas.toDataURL('image/png',1.0);
+            callBack&&callBack();
+        }
+        //恢复图片的缓存
+        function recoverBase64(){
+            is_synchronize&&changeCanvasData(cacheBase64);
+        }
+        function initEvent(){
+            var boxGesture=setGesture(document.querySelector("#canvas_parent"));  //得到一个对象
+            boxGesture.gesturestart=function(){//双指开始
+                if((is_synchronize&&top.is_spokesman)||!is_synchronize){
+                    is_canChangePage=false;
+
+                }
+            };
+            boxGesture.gesturemove=function(e){  //双指移动
+                if((is_synchronize&&top.is_spokesman)||!is_synchronize){
+                    $(this).css({
+                        height:base_height*e.scale,
+                        width:base_width*e.scale,
+                        "margin-top":base_height*e.scale<canvas_boxHeight?(canvas_boxHeight-base_height*e.scale)/2:0
+                    });
+                }
+            };
+            boxGesture.gestureend=function(){  //双指结束
+                if((is_synchronize&&top.is_spokesman)||!is_synchronize){
+//                    initBaseScale();
+                    if(background.width>default_width*maxScale){
+                        $(this).animate({"width":default_width*maxScale,"height":default_height*maxScale},300,initBaseScale)
+                    }else if(background.width<default_width*minScale){
+                        $(this).animate({"width":default_width*minScale,"height":default_height*minScale,"margin-top":(canvas_boxHeight-default_height*minScale)/2},300,initBaseScale)
+                    }else{
+                        initBaseScale();
+                    }
+                }
+            };
+            $("#canvas_parent").on("click",canvasDoubleClick);
+        }
+        function canvasDoubleClick(){//双击判断
+            if((is_synchronize&&top.is_spokesman)||!is_synchronize){
+                if( new Date().getTime() - clickTime < 500 ){
+                    console.log(default_width,default_height);
+                    is_canChangePage=false;
+                    if(background.height==default_height){//原尺寸
+                        $("#canvas_parent").animate({width:default_width*2,height:default_height*2,"margin-top":0},300,initBaseScale)
+                    }else{
+                        $("#canvas_parent").animate({width:default_width,height:default_height,"margin-top":0},300,initBaseScale)
+                    }
+                }else{
+                    clickTime = new Date().getTime();
+                }
+            }
+        }
+        function initBaseScale(){//初始化画板基础规模以及恢复数据并发送信息
+            is_canChangePage=true;
+            base_width=$Parent.getEleSize("width");
+            base_height=$Parent.getEleSize("height");
+            $("#background").attr("style")||$("#background").css("width","100%");
+            changeScale(function(){
+                is_synchronize&&(sendBoardScale(),recoverBase64());//发送图片规模,并绘制数据
+            });
+        }
+        //获取文件名称
+        function getFildName(id){
+            var aoData=[];
+            aoData.push( { "name": "meetingDoc.id", "value": id } );
+            var xurl="/actions/MeetingDoc.action?getMeetingDocById";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status == true) {
+                            $("#file_name").html(data.body.doc_title);
+                        } else {
+                            showInfoWinWarn("文件名称获取失败" + obj.msg);
+                        }
+                    }, function () {
+                        showInfoWinError("文件名称获取失败！");
+                    }
+            );
+        }
+        //初始化图片的列表
+        function initFilePicList(index){
+            var i=index?index:1;
+            (!index||index==1)&&$("#file_img_list").empty();
+            if(i<=imageCount){
+                $("#file_img_list").append('<li><span>' + i + '</span><div '+(is_synchronize?(i==curPage?'class="this"':''):(i==1?'class="this"':''))+'><img onload="initFilePicList('+(i+1)+')" src="' + picLoadPath + '/file/' + fileId + '/' + i + '.png"></div></li>');
+            }else{
+                is_loaded=true;
+                initHuaban();
+                changeFile(function () {
+//                    !is_synchronize && (is_canChangePage = true);
+                    is_synchronize?getSynchronizeData():(is_canChangePage = true);
+                });
+                closeLoadingToast(setGuide);
+                getFildName(fileId);
+            }
+        }
+//        function initFilePicList(){
+//            var ht="";
+//            for(var i=1;i<=imageCount;i++){
+//                ht+='<li><span>'+i+'</span><div '+(is_synchronize?(i==curPage?'class="this"':''):(i==1?'class="this"':''))+'><img src="'+picLoadPath+'/file/'+fileId+'/'+i+'.png"></div></li>';
+//            }
+//            var imgNum=imageCount;
+//            $("#file_img_list").html(ht);
+//            $("#file_img_list img").load(function(){
+//                imgNum--;
+//                if(imgNum==0){
+//                    is_loaded=true;
+//                    initHuaban();
+//                    changeFile(function(){
+//                        !is_synchronize&&(is_canChangePage=true);
+//                        is_synchronize&&getSynchronizeData();
+//                    });
+//                    closeLoadingToast(setGuide);
+//                }
+//            });
+//            getFildName(fileId);
+//        }
+        //引导页的设置
+        function setGuide(){
+            if(getLocalData("last_meeting_id")!=getLocalData("meeting_id")){
+                setLocalData("last_meeting_id",getLocalData("meeting_id"));
+                $(".aui-mask").addClass("aui-mask-in");
+                guidePosition(1);
+            }
+        }
+        //取消子选项
+        function removeSetAttr(){
+            $(".footer_control .set_attr").removeClass("set_attr");
+        }
+        function choiceColor(the){//选择画笔颜色
+            $(the).addClass("current").siblings("i").removeClass("current");
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"set",
+                type:"pencil",
+                color:$(the).find("input").val()
+            });
+            $("#pencil").parent("li").addClass("currentTools").siblings("li").removeClass("currentTools");
+        }
+        function choiceLinewidth(the){//设置画笔粗细
+            $(the).parents("tr").find(".checked").removeClass("checked");
+            $(the).addClass("checked");
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"set",
+                type:"pencil",
+                lineWidth:$(the).attr("linewidth")
+            });
+            $("#pencil").parent("li").addClass("currentTools").siblings("li").removeClass("currentTools");
+        }
+        function choiceRubberSize(the){//设置橡皮擦的大小
+            $(the).parents("tr").find(".checked").removeClass("checked");
+            $(the).addClass("checked");
+            $("#rubber_box").css({height:$(the).attr("rubberSize"),width:$(the).attr("rubberSize")});
+            $(the).parents("li").removeClass("set_attr");
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"set",
+                type:"rubber"
+            });
+            canvasControl(the);
+        }
+        function rubber(the,event){//橡皮
+            canvasControl(the,event);
+            $(the).parent("li").addClass("currentTools").siblings("li").removeClass("currentTools");
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"set",
+                type:"rubber"
+            });
+        }
+        function pencil(the){//画笔
+            $(the).parent("li").addClass("currentTools").siblings("li").removeClass("currentTools");
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"set",
+                type:"pencil"
+            });
+        }
+        function clearHuaban(){//清除画板
+            if(top.is_spokesman&&is_synchronize){
+                top.openAuiDialog("callback","确认删除","数据将不能恢复",function(){},function(){
+                    $('#meeting_drawing_board').clearCanvas();
+                    sendUpdateCanvasData("clear");
+                });
+            }
+        }
+        function initHuaban(callBack) {//初始化画板
+            $('#meeting_drawing_board').CanvasDrawr({
+                dong:"init",
+                background:"background",
+                type:"pencil",
+                rubberEle:"rubber_box",
+                screenLock:false,
+                backgroundImg:$("#file_img_list .this img").attr("src"),
+                callBack:callBack?callBack:""
+            });
+            changePosition(0,0);
+        }
+        function changeBackgroundImg(callBack){//更换背景图片
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"changeBackgroundImg",
+                backgroundImg:$("#file_img_list .this img").attr("src"),
+                callBack:callBack?callBack:""
+            });
+        }
+        function changeFile(callBack){//更换文件
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"changeFile",
+                backgroundImg:$("#file_img_list .this img").attr("src"),
+                callBack:callBack?callBack:""
+            });
+        }
+        function changeCanvasData(src,callBack){//更换画板数据changeBackgroundImg
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"changeCanvasData",
+                canvasImg:src,
+                callBack:callBack?callBack:""
+            });
+        }
+        function drawImagedata(callBack){//拷贝画板数据
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"putImageData",
+                callBack:callBack?callBack:""
+            });
+        }
+        function prevNextPage(type){//上一页或下一页
+            if(type=="prev"){
+                if($("#file_img_list div.this").parent("li").index()==0){
+                    top.openCustomTap("当前页为首页，无上一页！", 2000);
+                }
+                else{
+                    if(top.is_spokesman&&is_synchronize){
+                        if(is_canChangePage){
+                            is_canChangePage=false;
+                            $("#file_img_list div.this").removeClass("this").parent("li").prev("li").children("div").addClass("this");
+                            changeBackgroundImg(function(){changePosition(0,0,true);getLabelImageListOnly();});
+                            sendChangeBackgroundImg();
+                        }
+                    }else{
+                        $("#file_img_list div.this").removeClass("this").parent("li").prev("li").children("div").addClass("this");
+                        changeBackgroundImg(function(){changePosition(0,0,true);});
+                    }
+                }
+            }else if(type=="next"){
+                if($("#file_img_list div.this").parent("li").index()==$("#file_img_list li").length-1){
+                    top.openCustomTap("当前页为尾页，无下一页！", 2000);
+                }else{
+                    if(top.is_spokesman&&is_synchronize){
+                        if(is_canChangePage){
+                            is_canChangePage=false;
+                            $("#file_img_list div.this").removeClass("this").parent("li").next("li").children("div").addClass("this");
+                            changeBackgroundImg(function(){changePosition(0,0,true);getLabelImageListOnly();});
+                            sendChangeBackgroundImg();
+                        }
+                    }else{
+                        $("#file_img_list div.this").removeClass("this").parent("li").next("li").children("div").addClass("this");
+                        changeBackgroundImg(function(){changePosition(0,0,true);});
+                    }
+                }
+            }
+        }
+        function initTouchetPosition(type,obj){//初始化开始与结束位置
+//            var canvas_box=document.getElementById("canvas_box"),
+                    var viewW =$("#canvas_box").getEleSize("width"),//Math.round(parseFloat(getComputedStyle(canvas_box).width)),//可见宽度
+                    contentW =$("#canvas_parent").getEleSize("width"),//Math.round(parseFloat(getComputedStyle(canvas_box.getElementsByTagName("div")[0]).width)),//内容宽度
+                    scrollLeft =$("#canvas_box").scrollLeft();//滚动宽度
+            console.log(viewW,contentW,scrollLeft);
+            if(viewW>=contentW){ //到达右侧底部时或者小于可见宽度时
+                if(type=="start"){
+                    startPosition=obj
+                }else{
+                    endPosition=obj;
+                    startPosition&&endPosition&&changePage();
+                }
+            }
+            else if(viewW<contentW&&viewW+scrollLeft>=contentW){
+                if(type=="start"){
+                    startPosition=obj;
+                    startPosition.position="right";
+                }else{
+                    endPosition=obj;
+                    endPosition.position="right";
+                    startPosition&&endPosition&&startPosition.position==endPosition.position&&changePage();
+                }
+            }else if(viewW<contentW&&scrollLeft<=0){
+                if(type=="start"){
+                    startPosition=obj;
+                    startPosition.position="left";
+                }else{
+                    endPosition=obj;
+                    endPosition.position="left";
+                    startPosition&&endPosition&&startPosition.position==endPosition.position&&changePage();
+                }
+            }else{
+                endPosition=startPosition=null;
+            }
+        }
+        function changePage(){//更换页面
+            if(Math.abs(endPosition.x-startPosition.x)>Math.abs(endPosition.y-startPosition.y)&&Math.abs(endPosition.x-startPosition.x)>($(window).width()*0.1)){
+                endPosition.x>startPosition.x?prevNextPage("prev"): prevNextPage("next");
+            }
+            endPosition=startPosition=null;
+        }
+        //折叠图片列表
+        function togglePicList(the){
+            $(".footer_control").removeClass("show");
+            $("#file_img_list").toggleClass("show");
+            toggleImgStrokeOrFill(the);
+            toggleImgStrokeOrFill(document.getElementById("toggleFileEditIcon"),false);
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"set",
+                screenLock:false
+            });
+        }
+        //折叠编辑栏
+        function toggleFileEdit(the){
+            $("#file_img_list").removeClass("show");
+            $(".footer_control").toggleClass("show");
+            toggleImgStrokeOrFill(the);
+            toggleImgStrokeOrFill(document.getElementById("togglePicListIcon"),false);
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"set",
+                screenLock:!screenLock
+            });
+         }
+        //请求获取基本的同步数据
+        function getSynchronizeData(){
+            var aoData={
+                "msgType":"getSynchronizeData",
+                "fromName":getLocalData("user_code"),
+                "meetingId":getLocalData("meeting_id")
+            };
+            top.sendWebSocketMsg(aoData);
+        }
+        //初始化同步数据
+        function initSynchronizeData(data){//index调用
+            if(data.curPage!=$("#file_img_list div.this").parent("li").index() + 1){
+                $("#file_img_list .this").removeClass("this");
+                $("#background").attr("src",$("#file_img_list li:nth-child("+data.curPage+") div").addClass("this").children("img").attr("src"))
+            }
+            if(data.width!="auto"&&data.height!="99%"){
+                $("#canvas_parent").css({
+                    height:data.height,
+                    width:data.width,
+                    "margin-top":data.height<canvas_boxHeight?(canvas_boxHeight-data.height)/2:0
+                });
+                base_width=data.width;
+                base_height=data.height;
+            }
+            changeScale(function(){
+                getLabelImageListOnly();
+                changePosition(data.leftPosition,data.topPosition);
+            });
+        }
+        //发言控制
+        function speakControl(the){
+            if($(the).attr("src").indexOf("red")!=-1&&top.is_spokesman){
+                top.openAuiDialog("callback","提示","确定要放弃发言吗？",function(){}, giveUpSpeak);
+            }else if(!top.is_spokesman){
+                checkMeetingState(isHasHost);//判断当前会议同步是否有主讲人
+            }
+        }
+        //是否有主讲人
+        function isHasHost(type){
+            var aoData=[];
+            aoData.push( { "name": "meetingId", "value":getLocalData("meeting_id")} );
+            var xurl="/actions/Meeting.action?getCurFileId";
+            sendAjaxRequest(xurl, aoData,
+                    function (data) {
+                        if (data.status) {
+                            if( data.body.fileId){
+                                if(type){
+                                    $("#applySpeakIcon").addClass("grayscale");
+                                }else{
+                                    top.openAuiDialog("text","提示","当前已有主讲人");
+                                }
+                            }else{
+                                if(!type){
+                                    applySpeak();//申请主讲人
+                                }
+                            }
+                        } else {
+                            showInfoWinError("查看主讲人失败!" + data.msg);
+                        }
+                    },
+                    function () {
+                        showInfoWinError("查看主讲人失败!");
+                    }
+            );
+        }
+        //检查会议状态
+
+        //请求主讲//主讲人更换文件
+        function applySpeak(isChangFile){
+            if(isChangFile){
+                var aoData={
+                    "msgType":"applyHost",
+                    "fromName":getLocalData("user_code"),
+                    "meetingId":getLocalData("meeting_id"),
+                    "spokesManName":getLocalData("user_name"),
+                    "leftPosition":"0",
+                    "topPosition":"0",
+                    "fileId":fileId,
+                    "imageCount":String(imageCount),
+                    "curPage":"1",
+                    "width":"auto",
+                    "height":"99%"
+
+                };
+                top.sendWebSocketMsg(aoData);
+                return false;
+            }
+            var aoData=[];
+            aoData.push( { "name": "meetingDoc.doc_id", "value": fileId} );
+            aoData.push( { "name": "meetingDoc.meeting_id", "value":getLocalData("meeting_id")} );
+            var xurl="/actions/MeetingDoc.action?getMyMeetingDoc";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        var infoList = data.body.file;
+                        var isCanEdit = false;
+                        for (var i = 0; i < infoList.length; i++) {
+                            if (infoList[i].id == fileId) {
+                                isCanEdit = true;
+                                top.openAuiDialog("callback", "提示", "确认要成为主讲人吗？",
+                                        function () {},
+                                        function () {
+                                            var aoData = {
+                                                "msgType": "applyHost",
+                                                "fromName": getLocalData("user_code"),
+                                                "meetingId": getLocalData("meeting_id"),
+                                                "spokesManName": getLocalData("user_name"),
+                                                "leftPosition": $("#canvas_box").scrollLeft() + "",
+                                                "topPosition": $("#canvas_box").scrollTop() + "",
+                                                "fileId": fileId,
+                                                "imageCount": String(imageCount),
+                                                "curPage": String($("#file_img_list div.this").parent("li").index() + 1),
+                                                "width": $("#canvas_parent").getEleSize("width") + "",
+                                                "height": $("#canvas_parent").getEleSize("height") + ""
+                                            };
+                                            top.sendWebSocketMsg(aoData);
+                                            is_synchronize = true;
+                                        }
+                                );
+                            } else {
+                                continue;
+                            }
+                        }
+                        if (!isCanEdit) {
+                            top.openAuiDialog("text", "提示", "您无权主讲该文件！");
+                        }
+                    },
+                    function () {
+                        showInfoWinError("文件权限检查失败！");
+                    }
+            );
+        }
+        //放弃发言权
+        function giveUpSpeak(){
+            var aoData=[];
+            aoData.push( { "name": "meetingId", "value":getLocalData("meeting_id")});
+            aoData.push( { "name": "userCode", "value":getLocalData("user_code")});
+            var xurl="/actions/Meeting.action?giveUpSpeak";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status) {
+                            top.is_spokesman=false;
+                            is_synchronize=false;
+                            outSynchroMeeting();//退出同步参会
+
+//                            $("#header_title").text("文件浏览");
+//                            $("#spokesManName").text("");
+//                            toggleImgStrokeOrFill($("#applySpeakIcon")[0],false);
+                            ///
+                            ///
+                            ///
+                            ///
+                        } else {
+                            showInfoWinError("放弃发言失败！");
+                        }
+                    },
+                    function () {
+                        showInfoWinError("放弃发言失败！");
+                    }
+            );
+        }
+        //别人或者自己放弃主讲人权限
+        function othergiveUpSpeak(){
+            top.openCustomTap("当前会议主讲人空缺");
+            $("#spokesManName").text("");
+            $("#applySpeakIcon").removeClass("grayscale");
+        }
+        //别人或者自己申请主讲人
+        function setSpeak(data){
+            if(is_synchronize){
+                $("#header_title").text("同步参会");
+                $("#spokesManName").text("主讲人:"+data.spokesManName);
+                if(data.fromName==getLocalData("user_code")){
+                    top.is_spokesman=true;
+                    toggleImgStrokeOrFill($("#applySpeakIcon")[0],true);
+                    $("#applySpeakIcon").removeClass("grayscale");
+                    getLabelImageListOnly();
+                }else{
+                    top.is_spokesman=false;
+                    $('#meeting_drawing_board').CanvasDrawr({
+                        doing:"set",
+                        screenLock:false
+                    });
+                    toggleImgStrokeOrFill($("#applySpeakIcon")[0],false);
+                    toggleImgStrokeOrFill(document.getElementById("toggleFileEditIcon"),false);
+                    $("#applySpeakIcon").addClass("grayscale");
+                    $(".footer_control").removeClass("show");
+                    $('#meeting_drawing_board').CanvasDrawr({
+                        doing:"set",
+                        screenLock:false
+                    });
+                    if(fileId!=data.fileId){
+                        fileId=data.fileId;//文件ID
+                        imageCount=data.imageCount;//图片数量
+                        curPage=data.curPage;//图片当前页
+                        openLoadingToast();
+                        is_loaded=false;
+                        initFilePicList();
+                    }else{
+                        $("#file_img_list li:nth-child("+data.curPage+") div").addClass("this").parent("li").siblings("li").children(".this").removeClass("this");
+                        changeBackgroundImg(getLabelImageListOnly);
+                        changePosition(data.leftPosition,data.topPosition);
+                    }
+                }
+            }else{
+                toggleImgStrokeOrFill(document.getElementById("applySpeakIcon"),false);
+                $("#applySpeakIcon").addClass("grayscale");
+                toggleImgStrokeOrFill(document.getElementById("toggleFileEditIcon"),false);
+                $(".footer_control").removeClass("show");
+                $('#meeting_drawing_board').CanvasDrawr({
+                    doing:"set",
+                    screenLock:false
+                });
+            }
+        }
+        //设置强制同步
+        function setForceSynchronize(data){
+            if(!is_synchronize){
+                window.location.replace("./file_detail.html?fileId="+ data.fileId + "&imageCount=" + data.imageCount + "&curPage=" + data.curPage + "&spokesManCode=" + data.fromName + "&spokesManName=" + encodeURIComponent(data.spokesManName));
+            }
+        }
+        //发送的需要同步的数据
+        function sendSynchronizeAll(){
+            var aoData={
+                "msgType":"synchronizeMeeting",
+                "fromName":getLocalData("user_code"),
+                "meetingId":getLocalData("meeting_id"),
+                "synchronizeType":"all",
+                "backgroundImgIndex":$("#file_img_list div.this").parent("li").index()+1,
+                "backgroundColor":background_color,
+                "canvasImg":$('#meeting_drawing_board').getCanvasURL(),
+                "leftPosition":$("#canvas_box").scrollLeft()+"",
+                "topPosition":$("#canvas_box").scrollTop()+""
+            };
+            top.sendWebSocketMsg(aoData);
+        }
+        //发送背景图
+        function sendChangeBackgroundImg(){
+            if(top.is_spokesman){
+                var aoData={
+                    "msgType":"synchronizeMeeting",
+                    "fromName":getLocalData("user_code"),
+                    "meetingId":getLocalData("meeting_id"),
+                    "synchronizeType":"changeBackgroundImg",
+                    "backgroundImgIndex":String($("#file_img_list div.this").parent("li").index()+1),
+                    "width":"auto",
+                    "height":"99%"
+                };
+                top.sendWebSocketMsg(aoData);
+            }
+        }
+        //发送数据
+        function sendUpdateCanvasData(type){
+            if(top.is_spokesman){
+                var aoData={
+                    "msgType":"synchronizeMeeting",
+                    "fromName":getLocalData("user_code"),
+                    "meetingId":getLocalData("meeting_id"),
+                    "synchronizeType":"updateCanvasData",
+                    "doingType":type,
+                    "rubberSize":$("#rubber_box").height()+"",
+                    "leftPosition":$("#canvas_box").scrollLeft()+"",
+                    "topPosition":$("#canvas_box").scrollTop()+"",
+                    "canvasImg":"",//cacheBase64,//$('#meeting_drawing_board').getCanvasURL(),
+                    "drawPaths":JSON.stringify(drawPaths)
+                };
+//                alert(1);
+                top.sendWebSocketMsg(aoData);
+                if(type=="clear"){
+                    cacheBase64="";
+                    insertOrUpdataLabelImage();
+                }else {
+                    setCacheBase64(insertOrUpdataLabelImage);
+                }
+            }
+        }
+        //申请强制同步所有的设备
+        function sendForceSynchronize(){
+            if(top.is_spokesman){
+                var aoData={
+                    "msgType":"forceSynchronize",
+                    "fromName":getLocalData("user_code"),
+                    "meetingId":getLocalData("meeting_id")
+                };
+                top.sendWebSocketMsg(aoData);
+            }
+        }
+        //发送视口位置
+        function sendMoveViewport(){
+            if(top.is_spokesman){
+                var tempLeft=$("#canvas_box").scrollLeft();
+                var tempTop=$("#canvas_box").scrollTop();
+                if(viewportPosition.left==tempLeft&&viewportPosition.top==tempTop){
+                    return false;
+                }else{
+                    viewportPosition.left=tempLeft;
+                    viewportPosition.top=tempTop;
+                    var aoData={
+                        "msgType":"synchronizeMeeting",
+                        "fromName":getLocalData("user_code"),
+                        "meetingId":getLocalData("meeting_id"),
+                        "synchronizeType":"moveViewport",
+                        "leftPosition":viewportPosition.left+"",
+                        "topPosition":viewportPosition.top+""
+                    };
+                    top.sendWebSocketMsg(aoData);
+                }
+            }
+        }
+        //发送画板大小
+        function sendBoardScale(){
+            if(top.is_spokesman){
+                var aoData={
+                    "msgType":"synchronizeMeeting",
+                    "fromName":getLocalData("user_code"),
+                    "meetingId":getLocalData("meeting_id"),
+                    "synchronizeType":"boardScale",
+                    "leftPosition":$("#canvas_box").scrollLeft()+"",
+                    "topPosition":$("#canvas_box").scrollTop()+"",
+                    "width":$("#canvas_parent").getEleSize("width")+"",
+                    "height":$("#canvas_parent").getEleSize("height")+""
+                };
+                top.sendWebSocketMsg(aoData);
+            }
+        }
+        //设置需要同步的数据
+        function setSynchronizeData(data){
+            if(!is_synchronize){
+                return false;
+            }
+            if(!is_loaded){
+                return false;
+            }
+            if(data.synchronizeType=="all"){//同步全部
+                $('#meeting_drawing_board').CanvasDrawr({
+                    doing:"synchronize",
+                    backgroundColor:data.backgroundColor,//背景颜色
+                    backgroundImg:data.backgroundImgIndex,//背景图片src
+                    canvasImg:data.canvasImg//画板图片
+                });
+                changePosition(data.leftPosition,data.topPosition);
+            }else if(data.synchronizeType=="changeBackgroundImg"){//同步背景
+                $("#file_img_list li").eq(data.backgroundImgIndex-1).children("div").addClass("this").parent("li").siblings("li").children("div.this").removeClass("this");
+                changeBackgroundImg(getLabelImageListOnly);
+                changePosition(0,0,true);
+            }
+            else if(data.synchronizeType=="updateCanvasData"){//同步数据
+                if(data.doingType=="pencil"){
+                    changePosition(data.leftPosition,data.topPosition,false,function(){
+                        $('#meeting_drawing_board').CanvasDrawr({
+                            doing:"drawPaths",
+//                          canvasImg:data.canvasImg//画板图片
+                            pathsData:data,
+                            callBack:setCacheBase64
+                        });
+                    });
+                }else if(data.doingType=="rubber"){
+                    $('#meeting_drawing_board').CanvasDrawr({
+                        doing:"clearPaths",
+                        pathsData:data,
+                        callBack:setCacheBase64
+                    });
+                }else if(data.doingType=="clear"){
+                    $('#meeting_drawing_board').clearCanvas(function(){
+                        cacheBase64="";
+                    });
+                }
+            }
+            else if(data.synchronizeType=="moveViewport"){//同步视口
+                changePosition(data.leftPosition,data.topPosition);
+            }else if(data.synchronizeType=="boardScale"){//画板大小
+                $("#canvas_parent").animate({scrollTop: data.topPosition,scrollLeft: data.leftPosition,height:data.height,width:data.width,"margin-top":data.height<canvas_boxHeight?(canvas_boxHeight-data.height)/2:0},200,function(){
+                    $(this).children(".background").attr("style")||$(this).children("#background").css("width","100%");
+                    changeScale(recoverBase64);
+                });
+            }
+        }
+        function changePosition(left,top,no_animate,callback){//改变视口的位置
+            $('#canvas_box').animate({scrollTop: top, scrollLeft: left}, !no_animate?500:0,callback&&callback());
+        }
+        //提交图片数据或者更新数据
+        function insertOrUpdataLabelImage(){
+            is_canChangePage=false;
+            var aoData=[];
+            aoData.push( { "name": "labelImage.doc_id", "value": fileId } );
+            aoData.push( { "name": "labelImage.page_num", "value": $("#file_img_list div.this").parent("li").index()+1 } );
+            aoData.push( { "name": "labelImage.image", "value": cacheBase64 } );
+            aoData.push( { "name": "labelImage.meeting_id", "value": getLocalData("meeting_id") } );
+            aoData.push( { "name": "labelImage.user_code", "value": getLocalData("user_code") } );
+            var xurl="/actions/LabelImage.action?saveLabelImage";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status) {
+                            is_canChangePage = true;
+//                        callBack&&callBack();
+                        } else {
+                            showInfoWinError("画板保存失败，请稍后再试！" + data.msg);
+                        }
+                    },
+                    function () {
+                        showInfoWinError("画板保存失败，请稍后再试！" + data.msg);
+                    }
+            );
+        }
+        //重新启动获取数据
+        function restartGetLabelImageListOnly(){
+            is_synchronize&&getLabelImageListOnly();
+        }
+        //获取图片数据
+        function getLabelImageListOnly(){
+            var aoData=[];
+            aoData.push( { "name": "labelImage.doc_id", "value": fileId } );
+            aoData.push( { "name": "labelImage.meeting_id", "value": getLocalData("meeting_id") } );
+            aoData.push( { "name": "labelImage.page_num", "value": $("#file_img_list div.this").parent("li").index()+1} );
+            var xurl="/actions/LabelImage.action?getLabelImageList";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        var info = data.aaData[0];
+                        if (info && $("#file_img_list div.this").parent("li").index() + 1 == info.page_num) {
+                            cacheBase64 = info.image;//初始化base64
+                            changeCanvasData(info.image, function () {
+                                is_canChangePage = true;
+                            });
+                        } else {
+                            cacheBase64 = null;
+                            is_canChangePage = true;
+                        }
+                    },
+                    function () {
+                        showInfoWinError("base64获取出错");
+                        is_canChangePage = true;
+                    }
+            );
+        }
+    </script>
+</head>
+<body class="file_detail">
+<header class="not_user_select">
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title" id="header_title">文件浏览</div>
+    <ul class="header_btn_list">
+        <li ></li>
+        <li>
+            <a class="asynchronous" href="javascript:void(0);" onclick="isOpenWin('file_list');"></a>
+        </li>
+        <li>
+            <a class="asynchronous" href="javascript:void(0);" onclick="sendForceSynchronize();"></a>
+        </li>
+        <li>
+            <img id="toggleFileEditIcon" onclick="toggleFileEdit(this);" src="img/icon-bianji.png">
+        </li>
+        <li>
+            <img id="togglePicListIcon" onclick="togglePicList(this);" src="img/page-turning_red.png">
+        </li>
+        <li class="filter">
+            <img id="applySpeakIcon" onclick="speakControl(this);" src="img/icon-huatong.png">
+        </li>
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(1,event)">
+        </li>
+        <li class="hide">
+            <img src="img/icon-bianji_red.png">
+            <img src="img/page-turning_red.png">
+            <img src="img/icon-huatong_red.png">
+            <img src="img/yibu_red.png">
+            <img src="img/guide1.png">
+            <img src="img/guide2.png">
+            <img src="img/guide3.png">
+            <img src="img/guide4.png">
+            <img src="img/guide5.png">
+            <img src="img/guide6.png">
+        </li>
+    </ul>
+</header>
+<section class="text-center full not_user_select">
+    <h5 class="file_name text-center">
+        <span id="spokesManName"></span>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <span id="file_name"></span>
+    </h5>
+   <div class="board_container">
+       <div  class="canvas_box text-center" id="canvas_box">
+           <div class="canvas_parent relative pointer" id="canvas_parent">
+               <!--<canvas class="background" id="background"></canvas>-->
+               <img src="" class="background" id="background">
+               <div id="rubber_box" class="rubber_box"></div>
+               <canvas id="meeting_drawing_board"></canvas>
+           </div>
+       </div>
+   </div>
+    <div class="footer_control middle hided">
+        <div class="color_box">
+            <p>画笔颜色</p>
+            <p>
+                <i onclick="choiceColor(this);" class="current"><input type="button" value="#000000"></i>
+                <i onclick="choiceColor(this);"><input type="button" value="#D0021B"></i>
+                <i onclick="choiceColor(this);"><input type="button" value="#F5A623"></i>
+                <i onclick="choiceColor(this);"><input type="button" value="#F8E71C"></i>
+                <i onclick="choiceColor(this);"><input type="button" value="#7ED321"></i>
+                <i onclick="choiceColor(this);"><input type="button" value="#4A90E2"></i>
+                <i onclick="choiceColor(this);"><input type="button" value="#9013FE"></i>
+            </p>
+        </div>
+        <ul class="list-unstyled list-inline no_margin">
+            <li class="pencil currentTools">
+                <a onclick="pencil(this);" id="pencil" class="color_inherit" href="javascript:void(0);">画笔</a>
+            </li>
+            <li class="rubber">
+                <a onclick="rubber(this,event);" class="color_inherit" href="javascript:void(0);">橡皮</a>
+                <div class="small_control text-center">
+                    <table class="rubberSize">
+                        <tbody>
+                        <tr>
+                            <td><div rubberSize="10" onclick="choiceRubberSize(this);" class="middle"><span></span></div></td>
+                            <td><div rubberSize="20" onclick="choiceRubberSize(this);" class="middle"><span></span></div></td>
+                            <td><div rubberSize="40" onclick="choiceRubberSize(this);" class="middle checked"><span></span></div></td>
+                            <td><div rubberSize="80" onclick="choiceRubberSize(this);" class="middle"><span></span></div></td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>20</td>
+                            <td>40</td>
+                            <td>80</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </li>
+            <li id="lineWidth" class="lineWidth">
+                <a onclick="canvasControl(this,event);" class="color_inherit" href="javascript:void(0);">粗细</a>
+                <div class="small_control text-center">
+                    <table class="thick">
+                        <tbody>
+                        <tr>
+                            <td><div linewidth="4" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                            <td><div linewidth="8" onclick="choiceLinewidth(this);" class="middle radius checked"><span class="radius"></span></div></td>
+                            <td><div linewidth="12" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                            <td><div linewidth="16" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                            <td><div linewidth="20" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                        </tr>
+                        <tr>
+                            <td>02</td>
+                            <td>04</td>
+                            <td>06</td>
+                            <td>08</td>
+                            <td>10</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </li>
+            <li class="empty">
+                <a onclick="clearHuaban();" class="color_inherit" href="javascript:void(0);">清空</a>
+            </li>
+        </ul>
+        <!--<div class="order_control middle">-->
+            <!--<a onclick="outSynchroMeeting();" class="style2" href="javascript:void(0);">关闭</a>-->
+            <!--<a class="style3" onclick="insertOrUpdataLabelImage();" href="javascript:void(0);">保存</a>-->
+        <!--</div>-->
+    </div>
+    <!--文件图片列表-->
+    <ul id="file_img_list" class="file_img_list list-unstyled show">
+        <!--<li>1<div class="this"><img src="http://localhost:8080/file/1484287518755/1.png"></div></li>-->
+        <!--<li>2<div><img src="http://172.16.8.222:8088/client/test_img/下载.png"></div></li>-->
+    </ul>
+</section>
+<div class="aui-mask"></div>
+<div class="guide guide1" id="guide">
+    <div class="guide_main">
+        <div class="main_header">
+            <a class="close_guide" onclick="coloeguide();" href="javascript:void(0);" role="button"></a>
+            <div class="header1">
+                <h5 class="no_margin">自主浏览</h5>
+                <p class="no_margin">与会人可根据个人需求进度，退出同步参会，自由阅读会议资料。</p>
+            </div>
+            <div class="header2">
+                <h5 class="no_margin">标注</h5>
+                <p class="no_margin">进入标注状态，提供线条颜色、线条粗细、手写笔，橡皮擦等模块，可及时保存。</p>
+            </div>
+            <div class="header3">
+                <h5 class="no_margin">翻页</h5>
+                <p class="no_margin">主讲人可根据会议进度，同步翻页会议资料。</p>
+            </div>
+            <div class="header4">
+                <h5 class="no_margin">申请发言</h5>
+                <p class="no_margin">点击该按钮申请发言，当前发言人为空时，可进行发言。</p>
+            </div>
+            <div class="header5">
+                <h5 class="no_margin">功能菜单</h5>
+                <p class="no_margin">开会小帮手，丰富的功能触手可及，让您的会议更加快捷、高效。</p>
+            </div>
+            <div class="header6">
+                <h5 class="no_margin">切换内容</h5>
+                <p class="no_margin">左右滑动文件图片切换内容。</p>
+            </div>
+        </div>
+        <div class="main_body">
+            <img src="./img/guide1.png">
+        </div>
+        <div class="main_footer">
+            <div class="footer1">
+                <span class="status">1/6</span>
+                <span class="order_control middle">
+                    <a class="style3" onclick="guidePosition(2);" role="button" href="javascript:void(0);">下一步</a>
+                </span>
+            </div>
+            <div class="footer2">
+                <span class="status">2/6</span>
+                <span class="order_control middle">
+                    <a class="style2" onclick="guidePosition(1);" role="button" href="javascript:void(0);">上一步</a>
+                    <a class="style3" onclick="guidePosition(3);" role="button" href="javascript:void(0);">下一步</a>
+                </span>
+            </div>
+            <div class="footer3">
+                <span class="status">3/6</span>
+                <span class="order_control middle">
+                    <a class="style2" onclick="guidePosition(2);" role="button" href="javascript:void(0);">上一步</a>
+                    <a class="style3" onclick="guidePosition(4);" role="button" href="javascript:void(0);">下一步</a>
+                </span>
+            </div>
+            <div class="footer4">
+                <span class="status">4/6</span>
+                <span class="order_control middle">
+                    <a class="style2" onclick="guidePosition(3);" role="button" href="javascript:void(0);">上一步</a>
+                    <a class="style3" onclick="guidePosition(5);" role="button" href="javascript:void(0);">下一步</a>
+                </span>
+            </div>
+            <div class="footer5">
+                <span class="status">5/6</span>
+                <span class="order_control middle">
+                     <a class="style2" onclick="guidePosition(4);" role="button" href="javascript:void(0);">上一步</a>
+                    <a class="style3" onclick="guidePosition(6);" role="button" href="javascript:void(0);">下一步</a>
+                </span>
+            </div>
+            <div class="footer6">
+                <span class="status">6/6</span>
+                <span class="order_control middle">
+                    <a class="style2" onclick="guidePosition(1);" role="button" href="javascript:void(0);">再次观看</a>
+                    <a class="style3" onclick="coloeguide()" role="button" href="javascript:void(0);">结束观看</a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

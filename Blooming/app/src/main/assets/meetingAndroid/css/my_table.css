@@ -1,0 +1,36 @@
+.my_table {
+  /*我的牌桌*/
+  background: #ffffff url(../img/bg.png) no-repeat center center;
+  background-size: 100% 100%;
+}
+.my_table .center_box {
+  display: inline-block;
+  width: 70%;
+  min-width: 700px;
+  position: relative;
+  z-index: 0;
+  vertical-align: middle;
+}
+.my_table .panel-body {
+  padding: 60px 20px;
+}
+.my_table .desk {
+  display: inline-block;
+  height: 260px;
+  width: 658px;
+  background: transparent url(../img/illus-zhuopan.png) no-repeat center center;
+  background-size: 100% 100%;
+}
+.my_table .desk h1 {
+  width: 82%;
+  font-size: 90px;
+  font-weight: 400;
+  margin: 20px auto;
+  line-height: 1.5em;
+}
+.my_table .desk span {
+  font-size: 40px;
+  width: 80%;
+  margin: auto;
+  color: #909090;
+}

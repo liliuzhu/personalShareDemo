@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>评分列表</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="css/vote-mark_list.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        $(function(){
+            getMarkList();
+        });
+//        获取评分列表
+        function getMarkList(){
+            var aoData=[];
+            aoData.push( { "name": "scoreTemplate.meeting_id", "value":getLocalData("meeting_id")} );
+            sendAjaxRequest("/actions/MeetingScore.action?getScoreTemplateList",aoData,
+                    function (data) {
+                        var currentTime = new Date().getTime();
+                        var ht = '';
+                        var markList = data.aaData;
+                        for (var i = 0; i < markList.length; i++) {
+                            ht+='<li>';
+                            if (currentTime > markList[i].end_time) {
+                                ht += '<div onclick="top.openWin(\'marking_result\',\'markId=' + markList[i].id + '\');" class="done pointer">'
+                                        + '<p class="text-left">#' + (i + 1) + '</p>'
+                                        + '<h4><a href="javascript:void(0);">' + markList[i].template_name + '</a></h4>';
+                            } else if (currentTime >= markList[i].start_time && currentTime <= markList[i].end_time) {
+                                ht += '<div onclick="top.openWin(\'marking\',\'markId=' + markList[i].id + '\');" class="doing pointer">'
+                                        + '<p class="text-left">#' + (i + 1) + '</p>'
+                                        + '<h4><a href="javascript:void(0);">' + markList[i].template_name + '</a></h4>';
+                            } else {
+                                ht += '<div class="no_start">'
+                                        + '<p class="text-left">#' + (i + 1) + '</p>'
+                                        + '<h4><span>' + markList[i].template_name + '</span></h4>';
+                            }
+                            ht += '<p>' + top.getTimeStr(markList[i].start_time, true) + '</p></div></li>';
+                        }
+                        $("#markList").html(ht);
+                    },
+                    function () {
+                        showInfoWinError("获取评分列表失败！");
+                    }
+            );
+        }
+    </script>
+</head>
+<body class="mark_list">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">评分</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(11,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="box">
+        <ul id="markList" class="list-unstyled no_margin list-inline overflow">
+
+        </ul>
+    </div>
+</section>
+</body>
+</html>

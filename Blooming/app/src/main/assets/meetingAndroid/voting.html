@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>投票中</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/voting.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        var meeting_id=getLocalData("meeting_id");
+        var voteId=getUrlParam(document.URL,"voteId");
+        var voteType=null;
+        var voteUsers=[];
+        var voteUserCount=0;
+        $(function(){
+//            $("#voteDetail").on("click",".pointer",function(){
+//                $(this).is(":empty")?$(this).html('<span class="glyphicon glyphicon-ok"></span>'):$(this).empty();
+//                summary($(this).index());
+//            });
+            getVoteTemplateById();
+        });
+//       两种类型投票形式:获取投票人或投票描述
+        function getVoteTemplateById(){
+            var aoData=[];
+            aoData.push( { "name": "voteTemplate.id", "value":voteId} );
+            sendAjaxRequest("/actions/MeetingVote.action?getVoteTemplateById",aoData,
+                    function (data) {
+                        if (data.status) {
+                            $("#voteDesc").text(data.body.template_desc);
+                            $("#voteDesc").text(data.body.template_desc);
+                            voteType=data.body.template_type;
+                            if (voteType == 0) {
+                                $("#templateName").text(data.body.template_name+"(单选)");
+                            } else {
+                                $("#templateName").text(data.body.template_name+"(多选)");
+//                                voteUsers = data.body.vote_users.split(",");
+//                                voteUserCount = voteUsers.length;
+//                                for (var i = 0; i < voteUserCount; i++) {
+//                                    $("#voteUsers").append('<td style="width:' + (100 / (voteUserCount + 1)) + '%;">' + voteUsers[i] + '</td>');
+//                                }
+                            }
+                            getVoteOptionsById();
+                        } else {
+                            showInfoWinWarn("投票信息获取失败！");
+                        }
+                    },
+                    function(){
+                        showInfoWinWarn("投票信息获取失败！");
+                    }
+            );
+        }
+//       两种类型投票形式: 获取评分选项
+        function getVoteOptionsById(){
+            var aoData=[];
+            aoData.push( { "name": "voteTemplateOption.template_id", "value":voteId} );
+            sendAjaxRequest("/actions/MeetingVote.action?getVoteTemplateOptionList",aoData,
+                    function (data) {
+                        var options = data.aaData;
+                        var ht = '';
+                        for (var i = 0; i < options.length; i++) {
+                            ht+='<li class="flex flex_direction_horizontal">'
+                                    + '<div class="flex_child text-left options">'
+                                    + '<input class="pointer" type="'+(voteType == 0?'radio':'checkbox')+'" name="option" id="'+options[i].id+'">'
+                                    + '<label class="no_bold no_margin pointer" for="'+options[i].id+'">'+options[i].option_name+'</label>'
+                                    + '</div>'
+                                    + '<div class="flex_child option_chart">'
+                                    + '<span class="totle">'
+                                    + '<i class="voted"></i>'
+                                    + '</span>'
+                                    + '<span class="text-right option_votes ellipsis">12票</span>'
+                                    + '</div>'
+                                    + '</li>';
+//                                ht += '<li>';
+//                                ht += '<label class="no_bold no_margin" for="' + options[i].id + '"><input name="option" id="' + options[i].id + '" type="radio">' + options[i].option_name + '</label>';
+//                                ht += '</li>';
+                        }
+                        $("#voteOptions").html(ht);
+//                        if (voteType == 0) {
+//
+//                        } else {
+//                            for (var i = 0; i < options.length; i++) {
+//                                ht += '<tr id="'+options[i].id+'"><td>' + options[i].option_name + '</td>';
+//                                for (var j = 0; j < voteUserCount; j++) {
+//                                    ht += '<td voteUser="'+voteUsers[j]+'" class="pointer"></td>';
+//                                }
+//                                ht += '</tr>';
+//                            }
+//                            $("#voteDetail").html(ht);
+//                            //汇总
+//                            ht = '<tr><td>汇总</td>';
+//                            for (i = 0; i < voteUserCount; i++) {
+//                                ht += '<td summary="'+voteUsers[i]+'" class="summary">0</td>';
+//                            }
+//                            ht += '</tr>';
+//                            $("#summary").html(ht);
+//                        }
+                    },
+                    function () {
+                        showInfoWinError("投票选项获取失败！");
+                    }
+            );
+        }
+        function summary(index){//统计当前列的总分
+            $("#summary tr td:nth-child("+(index+1)+")").text($("#voteDetail tr td:nth-child("+(index+1)+"):not(:empty)").length);
+        }
+        //清空
+        function clearAll(){
+//            if($(".vote_mode1").get(0)){
+                $("#voteOptions input").prop("checked",false);
+//            }else{
+//                $("#voteDetail .pointer").empty();
+//                $("#summary .summary").text("0");
+//            }
+        }
+//        提交投票结果
+        function submitVoteResult(){
+//            if(voteType==0){
+//                if(!$("#voteOptions input:checked").get(0)){
+//                    top.openAuiDialog("text","","请选择投票项");
+//                    return ;
+//                }
+//                var aoData=[];
+//                aoData.push( { "name": "meetingVoteResult.template_id", "value":voteId} );
+//                aoData.push( { "name": "meetingVoteResult.option_id", "value":$("#voteOptions input:checked").attr("id")} );
+//                aoData.push( { "name": "meetingVoteResult.meeting_id", "value":getLocalData("meeting_id")} );
+//                aoData.push( { "name": "meetingVoteResult.user_code", "value":getLocalData("user_code")} );
+//                sendAjaxRequest("/actions/MeetingVote.action?insertMeetingVoteResult",aoData,function(data){
+//                    if(data.status){
+//                        top.closeWin($("body").attr("class"));
+//                    }
+//                });
+//            }else if(voteType==1){
+//                if(!$("#voteDetail .glyphicon-ok").get(0)){
+//                    top.openAuiDialog("text","","请选择投票项");
+//                    return ;
+//                }
+//                var options={};
+//                for(var i= 0,eles=$("#voteDetail tr");i<eles.length;i++){
+//                    var ht=[];
+//                   $(eles[i]).find("td.pointer:not(:empty)").each(function(i,ele){
+//                       ht.push($(this).attr("voteuser"));
+//                    });
+//                    options[$(eles[i]).attr("id")]=ht;
+//                }
+//                var aoData=[];
+//                aoData.push( { "name": "meetingVoteResult.template_id", "value":voteId} );
+//                aoData.push( { "name": "meetingVoteResult.meeting_id", "value":getLocalData("meeting_id")} );
+//                aoData.push( { "name": "meetingVoteResult.user_code", "value":getLocalData("user_code")} );
+//                aoData.push( { "name": "meetingVoteResult.options", "value":JSON.stringify(options)} );
+//                sendAjaxRequest("/actions/MeetingVote.action?insertMeetingVoteResult",aoData,function(data){
+//                    if(data.status){
+//                        top.closeWin($("body").attr("class"));
+//                    }
+//                });
+//            }
+        }
+    </script>
+</head>
+<body class="voting">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">投票</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(12,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="panel panel-default">
+        <div id="templateName" class="panel-heading bg_right doing"></div>
+        <div class="panel-body">
+            <!--<div class="vote_mode1">-->
+                <!--<p id="voteDesc" class="indent2">-->
+                <!--</p>-->
+                <!--<ul id="voteOptions" class="list-inline list-unstyled no_margin overflow">-->
+                    <!---->
+                <!--</ul>-->
+            <!--</div>-->
+            <!--<div class="vote_mode2">-->
+                <!--<table class="table table-responsive table-bordered">-->
+                    <!--<thead>-->
+                    <!--<tr id="voteUsers">-->
+                        <!--<td class="slash">-->
+                            <!--<span class="optioned">被选人</span>-->
+                            <!--<span class="option">选项</span>-->
+                        <!--</td>-->
+                    <!--</tr>-->
+                    <!--</thead>-->
+                    <!--<tbody id="voteDetail">-->
+                    <!--</tbody>-->
+                    <!--<tfoot id="summary">-->
+                    <!--</tfoot>-->
+                <!--</table>-->
+            <!--</div>-->
+
+            <p id="voteDesc" class="indent2"></p>
+            <ul id="voteOptions" class="list-unstyled no_margin overflow option_list">
+                <!--<li class="flex flex_direction_horizontal">-->
+                    <!--<div class="flex_child text-left options">-->
+                        <!--<input class="pointer" type="radio" name="option" id="option1">-->
+                        <!--<label class="no_bold no_margin pointer" for="option1">十三陵水库烧烤1</label>-->
+                    <!--</div>-->
+                    <!--<div class="flex_child option_chart">-->
+                        <!--<span class="totle">-->
+                            <!--<i class="voted"></i>-->
+                        <!--</span>-->
+                        <!--<span class="text-right option_votes ellipsis">12票</span>-->
+                    <!--</div>-->
+                <!--</li>-->
+                <!--<li class="flex flex_direction_horizontal">-->
+                    <!--<div class="flex_child text-left options">-->
+                        <!--<input type="radio" name="option" id="option2">-->
+                        <!--<label class="no_bold no_margin" for="option2">十三陵水库烧烤2</label>-->
+                    <!--</div>-->
+                    <!--<div class="flex_child option_chart">-->
+                        <!--<span class="totle">-->
+                            <!--<i class="voted"></i>-->
+                        <!--</span>-->
+                        <!--<span class="text-right option_votes ellipsis">2票</span>-->
+                    <!--</div>-->
+                <!--</li>-->
+                <!--<li class="flex flex_direction_horizontal">-->
+                    <!--<div class="flex_child text-left options">-->
+                        <!--<input type="checkbox" name="option" id="option3">-->
+                        <!--<label class="no_bold no_margin" for="option3">十三陵水库烧烤2</label>-->
+                    <!--</div>-->
+                    <!--<div class="flex_child option_chart">-->
+                        <!--<span class="totle">-->
+                            <!--<i class="voted"></i>-->
+                        <!--</span>-->
+                        <!--<span class="text-right option_votes ellipsis">0票</span>-->
+                    <!--</div>-->
+                <!--</li>-->
+            </ul>
+            <p class="text-center btns">
+                <a class="clc" onclick="clearAll();" href="javascript:void(0);">清空</a>
+                <a class="sub" onclick="submitVoteResult();" href="javascript:void(0);">提交</a>
+            </p>
+        </div>
+    </div>
+</section>
+</body>
+</html>

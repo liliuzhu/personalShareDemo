@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>签到</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/sign_in.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script src="./js/canvasDrawBoard.js"></script>
+    <script>
+        $(function(){
+            initHuaban();
+        });
+        function choiceColor(the){//选择画笔颜色
+            $(the).addClass("current").siblings("i").removeClass("current");
+            $('#sign_in_board').CanvasDrawr({
+                doing:"set",
+                type:"pencil",
+                color:$(the).find("input").val()
+            });
+        }
+        function clearHuaban(){//清除画板
+            top.openAuiDialog("callback","确认删除","数据将不能恢复",function(){},function(){
+                $('#sign_in_board').clearCanvas();
+            });
+        }
+        function initHuaban() {//初始化画板
+            $('#sign_in_board').CanvasDrawr({
+            });
+        }
+        //保存我的签到
+        function savaMySignIn(){
+            var aoData=[];
+            aoData.push( { "name": "logonLog.meeting_id", "value": getLocalData("meeting_id")} );
+            aoData.push( { "name": "logonLog.log_image", "value":$('#sign_in_board').getCanvas()} );
+            var xurl="/actions/Meeting.action?insertLogonLog";
+            sendAjaxRequest(xurl, aoData,
+                    function (data) {
+                        if (data.status == true) {
+                            top.openCustomTap("签到成功!");
+//                            top.openAuiDialog("text", "提示", "签到成功!", function () {
+                                top.closeWin($('body').attr('class'));
+//                            });
+                        }
+                        else {
+                            showInfoWinError("签到失败，请从新签到！"+data.msg);
+                        }
+                    },
+                    function () {
+                        showInfoWinError("签到失败，请从新签到！");
+                    }
+            );
+        }
+    </script>
+</head>
+<body class="sign_in">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">我要签到</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(9,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="sign_in_content">
+        <div class="canvas_box">
+            <canvas id="sign_in_board"></canvas>
+        </div>
+        <div class="footer_control overflow middle text-left">
+            <div class="color_box">
+                <p>画笔颜色</p>
+                <p>
+                    <i onclick="choiceColor(this);" class="current"><input type="button" value="#000000"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#D0021B"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#F5A623"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#F8E71C"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#7ED321"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#4A90E2"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#9013FE"></i>
+                </p>
+            </div>
+            <div class="order_control middle">
+                <!--<a class="style1" href="javascript:void(0);">拍照</a>-->
+                <a class="style2" onclick="top.closeWin($('body').attr('class'));" href="javascript:void(0);">关闭</a>
+                <a class="style3" onclick="savaMySignIn();" href="javascript:void(0);">保存</a>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

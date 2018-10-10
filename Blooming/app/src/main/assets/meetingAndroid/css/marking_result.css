@@ -1,0 +1,63 @@
+.marking_result {
+  /*评分结果*/
+}
+.marking_result ul.option_votes_list {
+  width: 80%;
+  margin: 30px auto;
+  font-size: 1.5rem;
+}
+.marking_result ul.option_votes_list li {
+  padding: 15px 0;
+  -webkit-flex-wrap: nowrap;
+  -o-flex-wrap: nowrap;
+  -moz-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  -webkit-justify-content: center;
+  -o-justify-content: center;
+  -moz-justify-content: center;
+  -ms-justify-content: center;
+  justify-content: center;
+  -webkit-align-content: center;
+  -o-align-content: center;
+  -moz-align-content: center;
+  -ms-align-content: center;
+  align-content: center;
+  -webkit-align-items: center;
+  -o-align-items: center;
+  -moz-align-items: center;
+  -ms-align-items: center;
+  align-items: center;
+}
+.marking_result ul.option_votes_list .option_chart {
+  background-color: #F5F5F5;
+  height: 1.4rem;
+  margin: 0 15px;
+  width: 100px;
+  border-radius: 10px;
+  -ms-flex: 3;
+  -webkit-box-flex: 3;
+  -moz-box-flex: 3;
+  -webkit-flex: 3;
+  flex: 3;
+}
+.marking_result ul.option_votes_list .option_chart span {
+  display: block;
+  background-color: #FF4236;
+  width: 20%;
+  height: 100%;
+  border-radius: inherit;
+  -webkit-transition: width 1s ease-in-out 0s;
+  -moz-transition: width 1s ease-in-out 0s;
+  -ms-transition: width 1s ease-in-out 0s;
+  -o-transition: width 1s ease-in-out 0s;
+  transition: width 1s ease-in-out 0s;
+}
+.marking_result .close_btn {
+  color: #fff;
+  background-color: #F55146;
+  padding: 10px 50px;
+  margin: 20px 0;
+  border-radius: 25px;
+  font-size: 20px;
+}

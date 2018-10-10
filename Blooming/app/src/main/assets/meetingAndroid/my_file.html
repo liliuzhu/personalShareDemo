@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>我的文档</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/file_list.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script src="./js/bootstrap3.3.5.min.js"></script>
+    <script>
+        $(function(){
+            getMyMeetingDoc(getLocalData("meeting_id"));
+        });
+        //获取文件转换的图片列表
+        function getFilePicList(id,the){
+//            var aoData=[];
+//            aoData.push( { "name": "meetingDoc.id", "value":id} );
+//            var xurl="/actions/MeetingDoc.action?getMeetingDocPic";
+//            sendAjaxRequest(xurl,aoData,
+//                    function (data) {
+//                        if (data.status) {
+//                            top.is_spokesman && $(the).addClass("current_file").siblings("li.current_file").removeClass("current_file");
+//                            top.openWin("file_detail", "fileId=" + id + "&imageCount=" + data.body.iTotalRecords + "&operationType=host");
+//                        } else {
+//                            top.openAuiDialog("text", "提示", "该文件转换失败", function () {
+//                            });
+//                        }
+//                    },
+//                    function () {
+//                        showInfoWinError("文件信息获取失败！");
+//                    }
+//            );
+            var aoData=[];
+            aoData.push( { "name": "meetingDoc.id", "value":id} );
+            var xurl="/actions/MeetingDoc.action?getMeetingDocById";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status) {
+                            if(data.body.is_conver==1){
+                                top.is_spokesman && $(the).addClass("current_file").siblings("li.current_file").removeClass("current_file");
+                                top.openWin("file_detail", "fileId=" + id + "&imageCount=" + data.body.img_num+"&docTitle="+encodeURIComponent(data.body.doc_title));
+                            }else{
+                                top.openAuiDialog("text", "提示", "该文件转换失败");
+                            }
+                        } else {
+                            showInfoWinError("文件信息获取失败！");
+                        }
+                    },
+                    function () {
+                        showInfoWinError("文件信息获取失败！");
+                    }
+            );
+        }
+        //获取为我推送的文件列表
+        function getMyMeetingDoc(meetingId){
+            var aoData=[];
+            aoData.push( { "name": "meetingDoc.doc_id", "value": -1} );
+            aoData.push( { "name": "meetingDoc.meeting_id", "value":meetingId} );
+            var xurl="/actions/MeetingDoc.action?getMyMeetingDoc";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        var infoList = data.body.file;
+                        var videoList = data.body.video;
+                        for (var i = 0, ht = ''; i < infoList.length; i++) {
+                            ht += '<li id="file_' + infoList[i].id + '" onclick="getFilePicList(' + infoList[i].id + ',this);" class="not_user_select">'
+                                    + '<div></div>'
+                                    + '<img src="./img/' + geiFileIcon(infoList[i].doc_type) + '"/><br/>'
+                                    + '<a href="javascript:void(0);">' + infoList[i].doc_title + '</a>'
+                                    + '</li>';
+                        }
+                        $("#file_list").html(ht);
+                        for (i = 0, ht = ''; i < videoList.length; i++) {
+                            ht += '<li class="not_user_select">'
+                                    + '<div></div>'
+                                    + '<img src="./img/' + geiFileIcon(videoList[i].doc_type) + '"/><br/>'
+                                    + '<a href="javascript:void(0);">' + videoList[i].doc_title + '</a>'
+                                    + '</li>';
+                        }
+                        $("#video_list").html(ht);
+                        getCurrentSynchronizedate(
+                                function (data) {
+                                    if (data.status) {
+                                        $("#file_" + data.body.fileId).addClass("current_file");
+                                        if(getLocalData("user_code")==data.body.fromName){
+                                            top.is_spokesman=true;
+                                        }else{
+                                            top.is_spokesman=false;
+                                        }
+                                    } else {
+                                        showInfoWinError("获取当前同步文件失败!" + data.msg);
+                                    }
+                                },
+                                function () {
+                                    showInfoWinError("获取当前同步文件失败!");
+                                }
+                        );
+                    },
+                    function () {
+                        showInfoWinError("会议文件获取失败！");
+                    }
+            );
+        }
+    </script>
+</head>
+<body class="my_file">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">我的文档</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(3,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#file" data-toggle="tab">文档</a></li>
+                <!--<li><a href="#video" data-toggle="tab">视频</a></li>-->
+            </ul>
+        </div>
+        <div class="panel-body">
+            <div class="tab-content">
+                <div class="tab-pane fade in active" id="file">
+                    <ul class="file_lists list-unstyled overflow" id="file_list">
+                        <!--<li>-->
+                        <!--<img src="img/icon-txt@2x.png"/><br/>-->
+                        <!--<a href="javascript:void(0);">研发中心开发项目</a>-->
+                        <!--</li>-->
+                    </ul>
+                </div>
+                <div class="tab-pane fade" id="video">
+                    <ul class="file_lists list-unstyled overflow" id="video_list">
+                        <!--<li>-->
+                        <!--<img src="img/video-5@2x.png"/><br/>-->
+                        <!--<a href="javascript:void(0);">研发中心开发项目</a>-->
+                        <!--</li>-->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

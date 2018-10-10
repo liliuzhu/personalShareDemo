@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>电子白板</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/electronic_white_board.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script type="text/javascript" src="./js/canvasDrawBoard.js"></script>
+    <script>
+        $(function(){
+            initHuaban();
+        });
+        function choiceColor(the){//选择画笔颜色
+            $(the).addClass("current").siblings("i").removeClass("current");
+            $('#electronic_white_board').CanvasDrawr({
+                doing:"set",
+                type:"pencil",
+                color:$(the).find("input").val()
+            });
+        }
+        function choiceLinewidth(the){//设置画笔粗细
+            $(the).parents("tr").find(".checked").removeClass("checked");
+            $(the).addClass("checked");
+            $('#electronic_white_board').CanvasDrawr({
+                doing:"set",
+                type:"pencil",
+                lineWidth:$(the).attr("linewidth")
+            });
+            $(the).parents("li").removeClass("set_attr");
+        }
+        function choiceBgColor(the){//选择画板背景颜色
+            $(the).addClass("current").parent("td").siblings("td").find("i").removeClass("current");
+            $('#electronic_white_board').CanvasDrawr({
+                doing:"changeBackgroundColor",
+                type:"pencil",
+                backgroundColor:$(the).find("input").val()
+            });
+            $(the).parents("li").removeClass("set_attr");
+        }
+        function rubber(){//橡皮
+            $('#electronic_white_board').CanvasDrawr({
+                doing:"set",
+                type:"rubber"
+            });
+        }
+        function pencil(){//画笔
+            $('#electronic_white_board').CanvasDrawr({
+                doing:"set",
+                type:"pencil"
+            });
+        }
+        function clearHuaban(){//清除画板
+            top.openAuiDialog("callback","确认删除","数据将不能恢复",function(){},function(){
+                $('#electronic_white_board').clearCanvas();
+            });
+        }
+        function initHuaban() {//初始化画板
+            $('#electronic_white_board').CanvasDrawr({
+                rubberEle:"rubber_box",
+                background:"background",
+                type:"pencil"
+            });
+        }
+        function orientationchange(){//旋转画板
+            $('#electronic_white_board').CanvasDrawr({
+                doing:"orientationchange"
+            });
+        }
+
+        function updateWhiteboard(){//更新电子白板图片
+//            var aoData=[];
+//            aoData.push( { "name": "callServer.meeting_id", "value": getLocalData("meeting_id")} );
+//            aoData.push( { "name": "callServer.server_msg", "value": applyList.join("#*#")} );
+//            var xurl="/actions/Meeting.action?updateWhiteboard_imageById";
+//            sendAjaxRequest(xurl,aoData,function(data){
+//                try{、
+//                    if(data.status){
+//                        top.openAuiDialog("text", "提示", "服务呼叫成功!",function(){
+//                            top.closeWin($('body').attr('class'));
+//                        });
+//                    }
+//                }catch(e){}
+//            });
+        }
+    </script>
+</head>
+<body class="electronic_white_board">
+<header class="not_user_select">
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">电子白板</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(6,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center not_user_select">
+    <div class="sign_in_content">
+        <div class="canvas_box">
+            <canvas class="background" id="background"></canvas>
+            <canvas id="electronic_white_board"></canvas>
+            <div id="rubber_box" class="rubber_box"></div>
+        </div>
+        <div class="footer_control middle text-left">
+            <div class="color_box">
+                <p>画笔颜色</p>
+                <p>
+                    <i onclick="choiceColor(this);" class="current"><input type="button" value="#000000"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#D0021B"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#F5A623"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#F8E71C"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#7ED321"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#4A90E2"></i>
+                    <i onclick="choiceColor(this);"><input type="button" value="#9013FE"></i>
+                </p>
+            </div>
+            <ul class="list-unstyled list-inline no_margin">
+                <li class="pencil">
+                    <a onclick="pencil();" class="color_inherit" href="javascript:void(0);">画笔</a>
+                </li>
+                <li class="rubber">
+                    <a onclick="rubber();" class="color_inherit" href="javascript:void(0);">橡皮</a>
+                </li>
+                <li id="lineWidth" class="lineWidth">
+                    <a onclick="canvasControl(this);" class="color_inherit" href="javascript:void(0);">粗细</a>
+                    <div class="small_control text-center">
+                        <table class="thick">
+                            <tbody>
+                            <tr>
+                                <td><div linewidth="4" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                                <td><div linewidth="8" onclick="choiceLinewidth(this);" class="middle radius checked"><span class="radius"></span></div></td>
+                                <td><div linewidth="12" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                                <td><div linewidth="16" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                                <td><div linewidth="20" onclick="choiceLinewidth(this);" class="middle radius"><span class="radius"></span></div></td>
+                            </tr>
+                            <tr>
+                                <td>02</td>
+                                <td>04</td>
+                                <td>06</td>
+                                <td>08</td>
+                                <td>10</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </li>
+                <li class="bgColor">
+                    <a onclick="canvasControl(this);" class="color_inherit" href="javascript:void(0);">背景色</a>
+                    <div style="left: -117px;" class="small_control text-center">
+                        <table id="bg_color" class="bg_color">
+                            <tbody>
+                            <tr>
+                                <td><i onclick="choiceBgColor(this);" class="current"><input type="button" value="transparent"></i></td>
+                                <td><i onclick="choiceBgColor(this);"><input type="button" value="#F6E1E4"></i></td>
+                                <td><i onclick="choiceBgColor(this);"><input type="button" value="#FFEDD0"></i></td>
+                                <td><i onclick="choiceBgColor(this);"><input type="button" value="#FFFAC9"></i></td>
+                                <td><i onclick="choiceBgColor(this);"><input type="button" value="#DEFFBA"></i></td>
+                                <td><i onclick="choiceBgColor(this);"><input type="button" value="#D3E7FF"></i></td>
+                                <td><i onclick="choiceBgColor(this);"><input type="button" value="#EEDBFF"></i></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </li>
+                <li class="bgImg">
+                    <a class="color_inherit" href="javascript:void(0);">背景图</a>
+                </li>
+                <li class="pics">
+                    <a class="color_inherit" href="javascript:void(0);">图片集</a>
+                </li>
+                <li class="empty">
+                    <a onclick="clearHuaban();" class="color_inherit" href="javascript:void(0);">清空</a>
+                </li>
+            </ul>
+            <div class="order_control middle">
+                <a class="style2" href="javascript:void(0);" onclick="top.closeWin($('body').attr('class'));">关闭</a>
+                <a class="style3" href="javascript:void(0);">保存</a>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,522 @@
+body {
+  width: 100%;
+  overflow: hidden;
+  max-width: 100%;
+  min-width: 100%;
+}
+.file_detail header,
+.file_browser header {
+  box-shadow: none;
+  width: 100%;
+}
+.file_detail header .forceSynchronize,
+.file_browser header .forceSynchronize {
+  background: transparent url(../img/qiangzhi.png) no-repeat center center;
+  background-size: 100% 100%;
+}
+.file_detail header .forceSynchronize:active,
+.file_browser header .forceSynchronize:active,
+.file_detail header .forceSynchronize:hover,
+.file_browser header .forceSynchronize:hover {
+  background-image: url(../img/qiangzhi_red.png);
+}
+.file_detail header .asynchronous,
+.file_browser header .asynchronous {
+  background: transparent url(../img/yibu.png) no-repeat center center;
+  background-size: 100% 100%;
+}
+.file_detail header .asynchronous:active,
+.file_browser header .asynchronous:active,
+.file_detail header .asynchronous:hover,
+.file_browser header .asynchronous:hover {
+  background-image: url(../img/yibu_red.png);
+}
+.file_detail header .synchronization,
+.file_browser header .synchronization {
+  background: transparent url(../img/tongbu.png) no-repeat center center;
+  background-size: 100% 100%;
+}
+.file_detail header .synchronization:active,
+.file_browser header .synchronization:active,
+.file_detail header .synchronization:hover,
+.file_browser header .synchronization:hover {
+  background-image: url(../img/tongbu_red.png);
+}
+.file_detail header .filter,
+.file_browser header .filter {
+  background: transparent url("../img/icon-huatong_no.png") no-repeat center center;
+  background-size: 2.2rem 2.2rem;
+}
+.file_detail header .grayscale,
+.file_browser header .grayscale {
+  opacity: 0;
+}
+.file_detail section,
+.file_browser section {
+  overflow: hidden;
+  width: 100%;
+}
+.file_detail .footer_control,
+.file_browser .footer_control,
+.file_detail .file_img_box,
+.file_browser .file_img_box,
+.file_detail .file_img_box.show,
+.file_browser .file_img_box.show,
+.file_detail .footer_control.show,
+.file_browser .footer_control.show {
+  -webkit-transition: -webkit-transform 0.3s linear 0s;
+  -ms-transition: -ms-transform 0.3s linear 0s;
+  -moz-transition: -moz-transform 0.3s linear 0s;
+  -o-transition: -o-transform 0.3s linear 0s;
+  transition: transform 0.3s linear 0s;
+  -webkit-transform-style: preserve-3d;
+  /*设置内嵌的元素在 3D 空间如何呈现：保留 3D*/
+  -webkit-backface-visibility: hidden;
+  /*(设置进行转换的元素的背面在面对用户时是否可见：隐藏)*/
+  z-index: 200;
+}
+.file_detail .footer_control,
+.file_browser .footer_control {
+  bottom: 0;
+  left: 0;
+  transform: translate3d(0, 65px, 0);
+  -webkit-transform: translate3d(0, 65px, 0);
+  -moz-transform: translate3d(0, 65px, 0);
+  -o-transform: translate3d(0, 65px, 0);
+  -ms-transform: translate3d(0, 65px, 0);
+}
+.file_detail .file_img_box,
+.file_browser .file_img_box {
+  transform: translate3d(-180px, 0, 0);
+  -webkit-transform: translate3d(-180px, 0, 0);
+  -moz-transform: translate3d(-180px, 0, 0);
+  -o-transform: translate3d(-180px, 0, 0);
+  -ms-transform: translate3d(-180px, 0, 0);
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  padding: 100px 0 0;
+  background-color: #202328;
+  color: #ADADAD;
+  overflow: hidden;
+}
+.file_detail .file_img_box .file_img_list,
+.file_browser .file_img_box .file_img_list {
+  height: 100%;
+  overflow: auto;
+  padding: 0 20px;
+  min-width: 170px;
+}
+.file_detail .file_img_box li:last-child,
+.file_browser .file_img_box li:last-child {
+  padding-bottom: 50px;
+}
+.file_detail .file_img_box li,
+.file_browser .file_img_box li {
+  padding: 10px 0;
+}
+.file_detail .file_img_box li span,
+.file_browser .file_img_box li span {
+  display: inline-block;
+  vertical-align: top;
+  min-width: 2em;
+  text-align: left;
+}
+.file_detail .file_img_box li div,
+.file_browser .file_img_box li div {
+  display: inline-block;
+  vertical-align: top;
+  width: 102px;
+  background-color: #fff;
+  border: 2px solid transparent;
+}
+.file_detail .file_img_box li div img,
+.file_browser .file_img_box li div img {
+  width: 100%;
+  min-width: 98px;
+}
+.file_detail .file_img_box li.this,
+.file_browser .file_img_box li.this {
+  color: #fff;
+}
+.file_detail .file_img_box li.this div,
+.file_browser .file_img_box li.this div {
+  border-color: #DC5A52;
+}
+.file_detail .file_img_box.show,
+.file_browser .file_img_box.show {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+}
+.file_detail .footer_control.show,
+.file_browser .footer_control.show {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+}
+.file_detail .file_name,
+.file_browser .file_name {
+  width: 100%;
+  line-height: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  background-color: #FF9F96;
+  color: #fff;
+  z-index: 300;
+  position: absolute;
+  left: 0;
+}
+.file_detail .board_container,
+.file_browser .board_container {
+  width: 100%;
+  height: 100%;
+  background-color: #aaa;
+  overflow: hidden;
+  padding: 25px 1% 1%;
+}
+.file_detail .canvas_box,
+.file_browser .canvas_box {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  margin: 0;
+}
+.file_detail .canvas_parent,
+.file_browser .canvas_parent {
+  height: 99%;
+  margin: 0 auto;
+  overflow: hidden;
+  display: inline-block;
+  position: relative;
+  background: #ffffff no-repeat center center;
+  background-size: 100% 100%;
+  padding: 0;
+}
+.file_detail .canvas_parent .background,
+.file_browser .canvas_parent .background {
+  transform-origin: 0px 0px 0px;
+  position: relative;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+.file_detail .canvas_parent .rubber_box,
+.file_browser .canvas_parent .rubber_box {
+  z-index: 50;
+}
+.file_detail .canvas_parent canvas,
+.file_browser .canvas_parent canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+.file_detail .canvas_parent .virtual_page,
+.file_browser .canvas_parent .virtual_page {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0px 0px 0px;
+  z-index: 0;
+}
+.file_detail .canvas_parent .virtual_page.nextPage,
+.file_browser .canvas_parent .virtual_page.nextPage {
+  z-index: 1;
+  animation: nextPage 0.3s ease-in 0s 1;
+  -moz-animation: nextPage 0.3s ease-in 0s 1;
+  /* Firefox */
+  -webkit-animation: nextPage 0.3s ease-in 0s 1;
+  /* Safari and Chrome */
+  -o-animation: nextPage 0.3s ease-in 0s 1;
+  /* Opera */
+}
+.file_detail .canvas_parent .background.prevPage,
+.file_browser .canvas_parent .background.prevPage {
+  animation: prevPage 0.3s ease-in 0s 1;
+  -moz-animation: prevPage 0.3s ease-in 0s 1;
+  /* Firefox */
+  -webkit-animation: prevPage 0.3s ease-in 0s 1;
+  /* Safari and Chrome */
+  -o-animation: prevPage 0.3s ease-in 0s 1;
+  /* Opera */
+}
+.file_detail .guide,
+.file_browser .guide {
+  background: #ffffff url("../img/yibu.png") no-repeat center center;
+  background-size: 2.2rem auto;
+  border-radius: 0.3rem 0.3rem 0 0;
+  height: 4rem;
+  width: 4rem;
+  position: absolute;
+  overflow: visible;
+  z-index: 6000;
+  top: 22px;
+  left: 0;
+  display: none;
+  margin-top: -0.9rem;
+  margin-left: -0.9rem;
+}
+.file_detail .guide .guide_main,
+.file_browser .guide .guide_main {
+  border-radius: 0.3rem;
+  position: absolute;
+  background-color: #fff;
+  top: 4rem;
+  right: -1rem;
+  width: 24rem;
+}
+.file_detail .guide .guide_main > div,
+.file_browser .guide .guide_main > div {
+  position: relative;
+  width: 100%;
+}
+.file_detail .guide .guide_main .main_header,
+.file_browser .guide .guide_main .main_header,
+.file_detail .guide .guide_main .main_footer,
+.file_browser .guide .guide_main .main_footer {
+  font-size: 1rem;
+  padding: 1rem;
+}
+.file_detail .guide .guide_main .main_header .close_guide,
+.file_browser .guide .guide_main .main_header .close_guide {
+  position: absolute;
+  display: block;
+  height: 1rem;
+  width: 1rem;
+  right: 0.7rem;
+  top: 0.7rem;
+  background: transparent url(../img/close_guide.png) no-repeat center center;
+  background-size: 100% 100%;
+}
+.file_detail .guide .guide_main .main_header > div,
+.file_browser .guide .guide_main .main_header > div {
+  display: none;
+}
+.file_detail .guide .guide_main .main_header p,
+.file_browser .guide .guide_main .main_header p {
+  margin-top: 0.6rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  min-height: 3rem;
+}
+.file_detail .guide .guide_main .main_footer,
+.file_browser .guide .guide_main .main_footer {
+  padding: 1.2rem 1rem;
+}
+.file_detail .guide .guide_main .main_footer > div,
+.file_browser .guide .guide_main .main_footer > div {
+  display: none;
+}
+.file_detail .guide .guide_main .main_footer a,
+.file_browser .guide .guide_main .main_footer a {
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  margin-left: 0;
+}
+.file_detail .guide .guide_main img,
+.file_browser .guide .guide_main img {
+  width: 100%;
+  opacity: 0;
+}
+.file_detail .guide .guide_main .main_body,
+.file_browser .guide .guide_main .main_body {
+  background: transparent url(../img/guide1.png) no-repeat center center;
+  background-size: 100% 100%;
+}
+.file_detail .guide1,
+.file_browser .guide1 {
+  background-image: url("../img/yibu.png");
+}
+.file_detail .guide1 .guide_main .main_header .header1,
+.file_browser .guide1 .guide_main .main_header .header1 {
+  display: block;
+}
+.file_detail .guide1 .guide_main .main_body,
+.file_browser .guide1 .guide_main .main_body {
+  background-image: url("../img/guide1.png");
+}
+.file_detail .guide1 .guide_main .main_footer .footer1,
+.file_browser .guide1 .guide_main .main_footer .footer1 {
+  display: block;
+}
+.file_detail .guide2,
+.file_browser .guide2 {
+  background-image: url("../img/qiangzhi.png");
+}
+.file_detail .guide2 .guide_main .main_header .header2,
+.file_browser .guide2 .guide_main .main_header .header2 {
+  display: block;
+}
+.file_detail .guide2 .guide_main .main_body,
+.file_browser .guide2 .guide_main .main_body {
+  background-image: url("../img/guide2.png");
+}
+.file_detail .guide2 .guide_main .main_footer .footer2,
+.file_browser .guide2 .guide_main .main_footer .footer2 {
+  display: block;
+}
+.file_detail .guide3,
+.file_browser .guide3 {
+  background-image: url("../img/icon-bianji.png");
+}
+.file_detail .guide3 .guide_main .main_header .header3,
+.file_browser .guide3 .guide_main .main_header .header3 {
+  display: block;
+}
+.file_detail .guide3 .guide_main .main_body,
+.file_browser .guide3 .guide_main .main_body {
+  background-image: url("../img/guide3.png");
+}
+.file_detail .guide3 .guide_main .main_footer .footer3,
+.file_browser .guide3 .guide_main .main_footer .footer3 {
+  display: block;
+}
+.file_detail .guide4,
+.file_browser .guide4 {
+  background-image: url("../img/page-turning.png");
+}
+.file_detail .guide4 .guide_main .main_header .header4,
+.file_browser .guide4 .guide_main .main_header .header4 {
+  display: block;
+}
+.file_detail .guide4 .guide_main .main_body,
+.file_browser .guide4 .guide_main .main_body {
+  background-image: url("../img/guide4.png");
+}
+.file_detail .guide4 .guide_main .main_footer .footer4,
+.file_browser .guide4 .guide_main .main_footer .footer4 {
+  display: block;
+}
+.file_detail .guide5,
+.file_browser .guide5 {
+  background-image: url("../img/icon-huatong.png");
+}
+.file_detail .guide5 .guide_main .main_header .header5,
+.file_browser .guide5 .guide_main .main_header .header5 {
+  display: block;
+}
+.file_detail .guide5 .guide_main .main_body,
+.file_browser .guide5 .guide_main .main_body {
+  background-image: url("../img/guide5.png");
+}
+.file_detail .guide5 .guide_main .main_footer .footer5,
+.file_browser .guide5 .guide_main .main_footer .footer5 {
+  display: block;
+}
+.file_detail .guide6,
+.file_browser .guide6 {
+  background-image: url("../img/icon-menu.png");
+}
+.file_detail .guide6 .guide_main .main_header .header6,
+.file_browser .guide6 .guide_main .main_header .header6 {
+  display: block;
+}
+.file_detail .guide6 .guide_main .main_body,
+.file_browser .guide6 .guide_main .main_body {
+  background-image: url("../img/guide6.png");
+}
+.file_detail .guide6 .guide_main .main_footer .footer6,
+.file_browser .guide6 .guide_main .main_footer .footer6 {
+  display: block;
+}
+.file_detail .guide.guide7,
+.file_browser .guide.guide7 {
+  background: transparent;
+  left: 50%;
+  top: 50%;
+  margin: -2rem 0 0 -2rem;
+}
+.file_detail .guide.guide7 .guide_main,
+.file_browser .guide.guide7 .guide_main {
+  left: -10rem;
+  top: -11em;
+}
+.file_detail .guide.guide7 .guide_main .main_header .header7,
+.file_browser .guide.guide7 .guide_main .main_header .header7 {
+  display: block;
+}
+.file_detail .guide.guide7 .guide_main .main_body,
+.file_browser .guide.guide7 .guide_main .main_body {
+  background-image: url("../img/guide7.png");
+}
+.file_detail .guide.guide7 .guide_main .main_footer .footer7,
+.file_browser .guide.guide7 .guide_main .main_footer .footer7 {
+  display: block;
+}
+@-webkit-keyframes nextPage {
+  0% {
+    -webkit-transform: rotateY(0deg);
+  }
+  100% {
+    -webkit-transform: rotateY(-90deg);
+  }
+}
+@-o-keyframes nextPage {
+  0% {
+    -o-transform: rotateY(0deg);
+  }
+  100% {
+    -o-transform: rotateY(-90deg);
+  }
+}
+@-moz-keyframes nextPage {
+  0% {
+    -moz-transform: rotateY(0deg);
+  }
+  100% {
+    -moz-transform: rotateY(-90deg);
+  }
+}
+@keyframes nextPage {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(-90deg);
+  }
+}
+@-webkit-keyframes prevPage {
+  0% {
+    -webkit-transform: rotateY(-90deg);
+  }
+  100% {
+    -webkit-transform: rotateY(0deg);
+  }
+}
+@-o-keyframes prevPage {
+  0% {
+    -o-transform: rotateY(-90deg);
+  }
+  100% {
+    -o-transform: rotateY(0deg);
+  }
+}
+@-moz-keyframes prevPage {
+  0% {
+    -moz-transform: rotateY(-90deg);
+  }
+  100% {
+    -moz-transform: rotateY(0deg);
+  }
+}
+@keyframes prevPage {
+  0% {
+    transform: rotateY(-90deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}

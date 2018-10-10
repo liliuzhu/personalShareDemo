@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>视频详情</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/video_detail.css" rel="stylesheet">
+    <link rel="stylesheet" href="./video/mediaelementplayer.min.css" />
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script src="./video/mediaelement-and-player.js"></script>
+    <script>
+        $(function(){
+//            alert(document.webkitFullscreenEnabled);
+            var video=document.getElementById("video"),$video=$(video),$parent=$video.parent("div");
+            $video.attr({"src":"./zongyi.mp4","width":$parent.width(),"height":$parent.height()}).mediaelementplayer();
+            video.volume=0.2;//音量控制
+//            video.muted=false;//设置或返回是否关闭声音。
+//            video.playbackRate=1;//设置或返回视频播放的速度。
+        });
+    </script>
+</head>
+<body class="video_detail">
+<header>
+    <a href="javascript:void(0);" onclick="top.closeWin($('body').attr('class'));" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">视频播放</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav()">
+        </li>
+    </ul>
+</header>
+<section class="text-center full">
+    <div>
+        <video id="video" preload="load" src="">您的设备不支持video</video>
+    </div>
+</section>
+</body>
+</html>

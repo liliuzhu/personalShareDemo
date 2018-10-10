@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>同步参会-文件详情</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/custom-keyboard.js"></script>
+    <script>
+        $(function(){
+
+        });
+    </script>
+</head>
+<body>
+<header class="not_user_select">
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <h5 class="file_name ellipsis" id="file_name"></h5>
+    <div class="header_title" id="header_title">测试</div>
+    <ul class="header_btn_list">
+        <li id="spokesManName"></li>
+        <li>
+            <img id="togglePicListIcon" onclick="togglePicList(this);" src="img/icon-bianji.png">
+        </li>
+        <li>
+            <img id="moveBackgroundImgIcon" onclick="moveBackgroundImg(this);" src="img/icon-suoding.png">
+        </li>
+        <li>
+            <img id="applySpeakIcon" onclick="applySpeak();" src="img/icon-huatong.png">
+        </li>
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(1,event)">
+        </li>
+        <li class="hidden">
+            <img src="img/icon-bianji_red.png">
+            <img src="img/icon-suoding_red.png">
+            <img src="img/icon-huatong_red.png">
+        </li>
+    </ul>
+</header>
+<section class="text-center full not_user_select">
+
+</section>
+<!--<div class="custom_keyboard not_user_select">-->
+    <!--<input class="display" type="number" value="0" disabled>-->
+    <!--<table>-->
+        <!--<tbody>-->
+        <!--<tr>-->
+            <!--<td><input type="button" value="1"></td>-->
+            <!--<td><input type="button" value="2"></td>-->
+            <!--<td><input type="button" value="3"></td>-->
+            <!--<td rowspan="2"><input type="button" value="清空"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td><input type="button" value="4"></td>-->
+            <!--<td><input type="button" value="5"></td>-->
+            <!--<td><input type="button" value="6"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td><input type="button" value="7"></td>-->
+            <!--<td><input type="button" value="8"></td>-->
+            <!--<td><input type="button" value="9"></td>-->
+            <!--<td><input type="button" value="删除"></td>-->
+        <!--</tr>-->
+        <!--<tr>-->
+            <!--<td><input type="button" value="0"></td>-->
+            <!--<td><input type="button" value="取消"></td>-->
+            <!--<td colspan="2"><input id="mark_ok" type="button" value="确定"></td>-->
+        <!--</tr>-->
+        <!--</tbody>-->
+    <!--</table>-->
+<!--</div>-->
+<!--<div class="aui-mask"></div>-->
+</body>
+</html>

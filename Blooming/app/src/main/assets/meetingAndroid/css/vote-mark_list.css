@@ -1,0 +1,46 @@
+.vote_list,
+.mark_list {
+  /*投票列表-评分列表共用*/
+}
+.vote_list .box,
+.mark_list .box {
+  background-color: #fff;
+  padding: 30px 25px;
+}
+.vote_list .box li,
+.mark_list .box li {
+  float: left;
+  width: 33.33333%;
+  padding: 10px;
+}
+.vote_list .box li div,
+.mark_list .box li div {
+  position: relative;
+  padding: 15px 10px;
+  box-shadow: 2px 2px 5px 2px #ddd;
+  border: 1px solid #eee;
+}
+.vote_list .box li div:hover,
+.mark_list .box li div:hover {
+  box-shadow: 3px 3px 10px 5px #ddd;
+}
+.vote_list .box li p,
+.mark_list .box li p {
+  color: #A0A0A0;
+}
+.vote_list .box li h4,
+.mark_list .box li h4 {
+  margin: 15px 0;
+  font-size: 20px;
+  line-height: 30px;
+  height: 60px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vote_list .box li a,
+.mark_list .box li a {
+  color: inherit;
+}

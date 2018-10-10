@@ -1,0 +1,65 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+.iframe_box {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: "Microsoft Yahei", "sans-serif", "tahoma", "arial";
+  color: #333;
+  font-size: 14px;
+  background-color: #FBFBFB;
+  position: relative;
+  overflow: hidden;
+}
+.index {
+  /*整体框架*/
+}
+.index iframe {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #fff;
+  overflow: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-transition: -webkit-transform 0.5s ease-in-out 50ms;
+  -o-transition: -o-transform 0.5s ease-in-out 50ms;
+  -moz-transition: -moz-transform 0.5s ease-in-out 50ms;
+  transition: transform 0.5s ease-in-out 50ms;
+}
+.index iframe.current,
+.index iframe.first {
+  left: 0;
+}
+.index iframe.transition {
+  -webkit-transform: translate3d(100%, 0, 0);
+  -moz-transform: translate3d(100%, 0, 0);
+  -ms-transform: translate3d(100%, 0, 0);
+  -o-transform: translate3d(100%, 0, 0);
+  transform: translate3d(100%, 0, 0);
+}
+.index iframe.transition_delay {
+  -webkit-transform: translate3d(100%, 0, 0);
+  -moz-transform: translate3d(100%, 0, 0);
+  -ms-transform: translate3d(100%, 0, 0);
+  -o-transform: translate3d(100%, 0, 0);
+  transform: translate3d(100%, 0, 0);
+  transition-delay: 300ms;
+  -moz-transition-delay: 300ms;
+  /* Firefox 4 */
+  -webkit-transition-delay: 300ms;
+  /* Safari 和 Chrome */
+  -o-transition-delay: 300ms;
+  /* Opera */
+}

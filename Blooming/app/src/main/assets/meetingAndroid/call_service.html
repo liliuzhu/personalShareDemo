@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>呼叫服务</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/call_service.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        $(function(){
+            $(".list-unstyled").on("click","div",function(){
+                $(this).toggleClass("hover");
+            });
+            getServerList();
+        });
+        //获取服务列表
+        function getServerList(){
+            var xurl="/actions/SystemSetting.action?getSystemSettingList";
+            sendAjaxRequest(xurl,[],
+                    function (data) {
+                        var settingList = data.aaData;
+                        for (var i = 0; i < settingList.length; i++) {
+                            if (settingList[i].code == "call") {
+                                var serverList = settingList[i].system_setting.split("I");
+                                for (var j = 0; j < serverList.length; j++) {
+                                    serverList[j]&&!isNaN(serverList[j]) && $("#service_list li:nth-child(" + serverList[j] + ")").show(0);
+                                }
+                            }
+                        }
+                    },
+                    function () {
+                        showInfoWinError("服务列表获取失败！");
+                    }
+            );
+        }
+        //提交服务
+        function applyServer(){
+            var applyList=[];
+            if(!$("#service_list .hover").get(0)&&$("#server_msg").val()==""){
+                top.openAuiDialog("text", "提示", "请选择或填写服务内容!",function(){});
+                applyList=null;
+                return false;
+            }
+            else {
+                $("#service_list .hover").each(function(){
+                    applyList.push(parseInt($(this).parent("li").index())+1);
+                });
+            }
+            var aoData=[];
+            aoData.push( { "name": "callServer.meeting_id", "value": getLocalData("meeting_id")} );
+            aoData.push( { "name": "callServer.server_msg", "value": applyList.join("#*#")} );
+            aoData.push( { "name": "callServer.user_code", "value": getLocalData("user_code")} );
+            aoData.push( { "name": "callServer.user_code", "value": getLocalData("user_code")} );
+            aoData.push( { "name": "callServer.comment", "value": $("#server_msg").val()} );
+            aoData.push( { "name": "device_number", "value": getEquipmentSN()} );
+            var xurl="/actions/CallServer.action?insertCallServer";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status) {
+                            remindUpdate();
+                        } else {
+                            showInfoWinError("服务呼叫失败" + data.msg);
+                        }
+                    }, function () {
+                        showInfoWinError("服务呼叫失败");
+                    }
+            );
+        }
+        //提醒更新
+        function remindUpdate(){
+            var aoData={"msgType":"callServer", "fromName":getLocalData("user_code"), "meetingId":getLocalData("meeting_id")};
+            top.sendWebSocketMsg(aoData);
+            top.openCustomTap("服务已发送!");
+            top.closeWin($('body').attr('class'));
+        }
+    </script>
+</head>
+<body class="call_service">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">呼叫服务</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(8,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="center_box">
+        <ul class="list-unstyled no_margin service_list overflow text-center" id="service_list">
+            <li>
+                <div>
+                    <img src="img/icon-hujiaobaizhi@2x.png"/>
+                    <a href="javascript:void(0);">白纸</a>
+                </div>
+            </li>
+            <li>
+                <div>
+                    <img src="img/icon-hujiaoqianzibi@2x.png"/>
+                    <a href="javascript:void(0);">签字笔</a>
+                </div>
+            </li>
+            <li>
+                <div>
+                    <img src="img/icon-hujiaohuatong@2x.png"/>
+                    <a href="javascript:void(0);">话筒</a>
+                </div>
+            </li>
+            <li>
+                <div>
+                    <img src="img/icon-hujiaobianqianzhi@2x.png"/>
+                    <a href="javascript:void(0);">便签纸</a>
+                </div>
+            </li>
+            <li>
+                <div>
+                    <img src="img/icon-hujiaoshui@2x.png"/>
+                    <a href="javascript:void(0);">水</a>
+                </div>
+            </li>
+            <li>
+                <div>
+                    <img src="img/icon-hujiaocha@2x.png"/>
+                    <a href="javascript:void(0);">茶</a>
+                </div>
+            </li>
+            <li>
+                <div>
+                    <img src="img/icon-hujiaokafei@2x.png"/>
+                    <a href="javascript:void(0);">咖啡</a>
+                </div>
+            </li>
+            <li>
+                <div>
+                    <img src="img/icon-hujiaofuwurenyuan@2x.png"/>
+                    <a href="javascript:void(0);">服务人员</a>
+                </div>
+            </li>
+        </ul>
+        <textarea name="" id="server_msg" cols="30" rows="10" placeholder="可手动输入要呼叫的内容......"></textarea>
+        <p>
+            <a href="javascript:void(0);" onclick="applyServer();" class="ok_btn">确认呼叫</a>
+        </p>
+    </div>
+</section>
+</body>
+</html>

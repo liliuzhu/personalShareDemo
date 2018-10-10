@@ -1,0 +1,125 @@
+.function_list{
+  /*功能列表*/
+  background: #fff url(../img/bg.png) no-repeat center center;
+  background-size: 100% 100%;
+  .center_box{
+    display: inline-block;
+    width: 90%;
+    position: relative;
+    z-index: 0;
+    vertical-align: middle;
+  }
+  .big_box{
+    text-align: center;
+    height: 240px;
+    width: 240px;
+    display: inline-block;
+    border:1px solid #F7F7F7;
+    background-color: #fff;
+    cursor: pointer;
+    img{
+      height: 50%;
+      margin: 30px 0;
+    }
+    a{
+      display: inline-block;
+      width: 50%;
+      font-size: 16px;
+      color: #fff;
+      background-color: #FF4134;
+      padding: 5px 5px;
+      line-height: 22px;
+      border-radius: 16px;
+    }
+  }
+  .function_box{
+    /*功能盒子*/
+    height: 160px;
+    padding-top: 5%;
+    position: relative;
+    text-align: center;
+  }
+  .nav_list{
+    /*导航列表*/
+    display: inline-block;
+    width: 100%;
+    //opacity:0;
+    height: 110px;
+    transform: translateY(120px) scale(0,0);
+    -ms-transform:translateY(120px) scale(0,0); 	/* IE 9 */
+    -moz-transform:translateY(120px) scale(0,0); 	/* Firefox */
+    -webkit-transform:translateY(120px) scale(0,0); /* Safari 和 Chrome */
+    -o-transform:translateY(120px) scale(0,0);
+    padding: 20px 0;
+    background-color: #fff;
+    position: relative;
+    ul{
+      overflow: hidden;
+      height: 100%;
+    }
+    li{
+      overflow: inherit;
+      height: 100%;
+      img{
+        height: 43%;
+        display: block;
+        margin: 0 auto 20px;
+      }
+    }
+    a{
+      overflow: inherit;
+      color: #58688C;
+      display: block;
+      height: 100%;
+    }
+  }
+  .nav_list.open{
+    transform: translateY(0) scale(1,1);
+    -ms-transform:translateY(0) scale(1,1); 	/* IE 9 */
+    -moz-transform:translateY(0) scale(1,1); 	/* Firefox */
+    -webkit-transform:translateY(0) scale(1,1); /* Safari 和 Chrome */
+    -o-transform:translateY(0) scale(1,1);
+    opacity: 1;
+  }
+  .nav_list:after{
+    content: "";
+    display: inline-block;
+    position: absolute;
+    height: 0;
+    width: 0;
+    bottom:-8px;
+    left:50%;
+    margin-left: -8px;
+    border: 8px solid #fff;
+    transform: rotateZ(45deg);
+    -ms-transform:rotateZ(45deg); 	/* IE 9 */
+    -moz-transform:rotateZ(45deg); 	/* Firefox */
+    -webkit-transform:rotateZ(45deg); /* Safari 和 Chrome */
+    -o-transform:rotateZ(45deg);
+    box-shadow: 2px 2px 2px #ddd;
+  }
+  .nav_list,.control{
+    -webkit-transition: all 0.3s linear 0s;
+    -o-transition: all 0.3s linear 0s;
+    -moz-transition: all 0.3s linear 0s;
+    -ms-transition: all 0.3s linear 0s;
+    transition: all 0.3s linear 0s;
+  }
+  .control{
+    margin-top: 40px;
+    height:60px;
+    width: 60px;
+    background:#FF4134 url(../img/illus-control.png) no-repeat center center;
+    background-size: 100%;
+    display: inline-block;
+    position: relative;
+    z-index: 100;
+  }
+  .control.open{
+    transform:rotateZ(-45deg);
+    -ms-transform:rotateZ(-45deg); 	/* IE 9 */
+    -moz-transform:rotateZ(-45deg); 	/* Firefox */
+    -webkit-transform:rotateZ(-45deg); /* Safari 和 Chrome */
+    -o-transform:rotateZ(-45deg);
+  }
+}

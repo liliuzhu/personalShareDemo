@@ -1,0 +1,242 @@
+.meeting_list {
+  /*修改boot面板*/
+}
+.meeting_list section {
+  background-color: #fff;
+}
+.meeting_list .container_box {
+  padding-bottom: 0.8rem;
+  position: relative;
+  text-align: left;
+}
+.meeting_list div.left_side,
+.meeting_list div.right_side {
+  vertical-align: top;
+  display: inline-block;
+  background-color: #fff;
+  text-align: center;
+}
+.meeting_list div.left_side {
+  width: 35%;
+  padding: 0;
+  border-right: 1.8rem solid #fff;
+}
+.meeting_list div.left_side > * {
+  padding-left: 20px;
+  padding-right: 20px;
+  background-color: #F9FAFA;
+  box-shadow: 1px 1px 3px 0 rgba(178, 178, 178, 0.34);
+}
+.meeting_list div.left_side .serch_box {
+  position: relative;
+  margin: 1.5rem 0;
+}
+.meeting_list div.left_side .serch_box > input {
+  display: inline-block;
+  width: 100%;
+  height: 3.6rem;
+  border: 1px solid #D8D8D8;
+  border-radius: 2px;
+  padding-right: 4rem;
+  padding-left: 1rem;
+}
+.meeting_list div.left_side .serch_box > a {
+  height: 100%;
+  display: block;
+  position: absolute;
+  border-radius: 2px;
+  top: 0;
+  right: 0;
+  width: 4rem;
+  border: 1px solid #D8D8D8;
+  font-size: 2rem;
+  color: #d8d8d8;
+  font-weight: normal;
+}
+.meeting_list div.left_side .serch_box > a > span {
+  display: block;
+  height: 100%;
+  line-height: 3.6rem;
+}
+.meeting_list .system_time {
+  padding-bottom: 2.5rem;
+  padding-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+.meeting_list .system_time h1 {
+  margin-bottom: 1rem;
+  font-size: 4.5rem;
+}
+.meeting_list .system_time p {
+  font-size: 1.7rem;
+}
+.meeting_list .system_date {
+  padding-bottom: 1.8rem;
+  padding-top: 1.8rem;
+}
+.meeting_list .system_date P {
+  margin-left: 5px;
+  padding-left: 2rem;
+  background: transparent url(../img/icon-star.png) no-repeat left center;
+  background-size: auto 80%;
+  font-size: 1.4rem;
+}
+.meeting_list .system_date P a {
+  color: #F26C4F;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  display: inline-block;
+  padding: 0 5px;
+}
+.meeting_list div.right_side {
+  padding-bottom: 0.8rem;
+  width: 65%;
+  position: absolute;
+  height: 100%;
+  right: 0;
+}
+.meeting_list div.right_side > div {
+  height: 100%;
+}
+.meeting_list div.right_side > div > .row {
+  display: table;
+  margin-bottom: 1.6rem;
+  table-layout: fixed;
+  width: 100%;
+}
+.meeting_list div.right_side > div > .row > div {
+  display: table-cell;
+  vertical-align: top;
+  float: none;
+  width: 50%;
+}
+.meeting_list div.right_side > div > .row .panel-body {
+  min-height: 17rem;
+  max-height: 19.8rem;
+  overflow: auto;
+}
+.meeting_list div.right_side > div > .row > div:first-child .panel-body,
+.meeting_list div.right_side > div > .row > div:nth-child(2) {
+  border-left: 1px solid #ddd;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li {
+  position: relative;
+  cursor: pointer;
+  float: left;
+  width: 50%;
+  padding: 0.6rem 0.8rem;
+  border: 0.1rem solid #ddd;
+  border-left-width: 0.25rem;
+  border-top: none;
+  color: #6b6b6b;
+  background-color: #F3F3F3;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li > span {
+  line-height: 1.8rem;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li:after {
+  font-size: 1.1rem;
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  background: transparent url(../img/meeting_statue0.png) no-repeat left center;
+  background-size: auto 80%;
+  padding-left: 1.5rem;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue0 {
+  border-left-color: #148D84;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue0:after {
+  content: "未开始";
+  color: #148D84;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue0.active,
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue0:hover {
+  background-color: #E1F7F1;
+  border-bottom-color: #148D84;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue1 {
+  border-left-color: #FDB553;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue1:after {
+  content: "召开中";
+  color: #FDB553;
+  background-image: url(../img/meeting_statue1.png);
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue1.active,
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue1:hover {
+  background-color: #FCF2E4;
+  border-bottom-color: #FDB553;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue2 {
+  border-left-color: #F26C4F;
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue2:after {
+  content: "已结束";
+  color: #F26C4F;
+  background-image: url(../img/meeting_statue2.png);
+}
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue2.active,
+.meeting_list div.right_side > div > .row ul.meeting_list_item > li.meeting_statue2:hover {
+  background-color: #FDF0EC;
+  border-bottom-color: #F26C4F;
+}
+.meeting_list div.right_side > div ul.meeting_detail > li {
+  padding: 13px 10px 13px 25px;
+  border-bottom: 1px solid #ddd;
+}
+.meeting_list div.right_side > div ul.meeting_detail > li > span {
+  display: table-cell;
+  vertical-align: top;
+}
+.meeting_list div.right_side > div ul.meeting_detail > li > span:first-child {
+  color: #adadad;
+  padding-right: 0.5em;
+  width: 6em;
+  text-align: right;
+}
+.meeting_list div.right_side > div ul.meeting_detail > li > span:last-child {
+  color: #202328;
+  font-size: 15px;
+  line-height: 20px;
+  min-height: 20px;
+}
+.meeting_list .fc-event {
+  border: 1px solid #0096ff;
+  background-color: #0096ff;
+  width: 20px!important;
+  text-align: center;
+  max-width: 30px;
+  border-radius: 50%!important;
+}
+.meeting_list .fc-day-content {
+  height: 20px;
+}
+.meeting_list .fc-header-center {
+  text-align: right;
+}
+.meeting_list .fc-header-center h2 {
+  font-size: 22px;
+}
+.meeting_list .fc-header-right {
+  width: 0;
+}
+.meeting_list .panel-default {
+  border: none;
+  box-shadow: 2px 2px 7px 1px rgba(178, 178, 178, 0.34);
+}
+.meeting_list .panel-heading {
+  background-color: #fbfbfb;
+  border: none;
+  font-size: 14px;
+  color: #6b6b6b;
+  padding: 13px 0 13px 14px;
+  letter-spacing: 0;
+  position: relative;
+  border-radius: 0;
+  border-bottom: 1px solid #ddd;
+}
+.meeting_list .panel-body {
+  padding: 0;
+}
+/*修改轮播*/

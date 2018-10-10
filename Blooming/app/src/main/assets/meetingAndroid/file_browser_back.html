@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0, user-scalable=no,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>文件浏览</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="css/file_detail-file_browser.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="js/scrollevents.min.js"></script>
+    <script type="text/javascript" src="./js/jsPublic.js"></script>
+    <script type="text/javascript" src="./js/file_detail.js"></script>
+    <script type="text/javascript" src="./js/custom-loading.js"></script>
+    <script>
+        var fileId=getUrlParam(document.URL,"fileId");//文件ID
+        var imageCount=getUrlParam(document.URL,"imageCount");//图片数量
+        var is_loaded=false;//是否加载完毕
+        var is_synchronize=false;
+        //位置变量
+        var startPosition=null,endPosition=null;
+        //图片静态服务器地址
+        var picLoadPath=getLocalData("picLoadPath");
+        var canvas_boxHeight=null;
+//        var $this=null;
+        //双击变量
+        var clickTime=null;
+        $(function(){
+            $Parent=$("#canvas_parent");
+            canvas_boxHeight=$("#canvas_box").height();
+            openLoadingToast();//打开loading
+            initEvent();
+            setTimeout(windowReady,600);
+        });
+        function windowReady(){
+            initFilePicList();
+            $("#file_img_list").on("click","div",function(){
+                if(!$(this).hasClass("this")){
+                    $(this).addClass("this").parent("li").siblings("li").children(".this").removeClass("this");
+                    changeBackgroundImg();
+                }
+            });
+        }
+        function initEvent(){
+            var boxGesture=setGesture(document.querySelector("#canvas_parent"));  //得到一个对象
+            boxGesture.gesturestart=function(){//双指开始
+            };
+            boxGesture.gesturemove=function(e){  //双指移动
+                $(this).css({
+                    height:base_height*e.scale,
+                    width:base_width*e.scale,
+                    "margin-top":base_height*e.scale<canvas_boxHeight?(canvas_boxHeight-base_height*e.scale)/2:0
+                });
+            };
+            boxGesture.gestureend=function(){  //双指结束
+                if(background.width>default_width*maxScale){
+                    $(this).animate({"width":default_width*maxScale,"height":default_height*maxScale},200,initBaseScale)
+                }else if(background.width<default_width*minScale){
+                    $(this).animate({"width":default_width*minScale,"height":default_height*minScale,"margin-top":(canvas_boxHeight-default_height*minScale)/2},200,initBaseScale)
+                }else{
+                    initBaseScale();
+                }
+            };
+            //双击绑定
+            $("#canvas_parent").on("click",canvasDoubleClick);
+        }
+        function canvasDoubleClick(){//双击判断
+            if( new Date().getTime() - clickTime < 500 ){
+                if(background.height==default_height){//原尺寸
+                    $("#canvas_parent").animate({width:default_width*2,height:default_height*2,"margin-top":0},300,initBaseScale)
+                }else{
+                    $("#canvas_parent").animate({width:default_width,height:default_height,"margin-top":0},300,initBaseScale)
+                }
+            }else{
+                clickTime = new Date().getTime();
+            }
+        }
+        function initBaseScale(){//初始化画板基础规模以及恢复数据并发送信息
+            base_width=$Parent.getEleSize("width");
+            base_height=$Parent.getEleSize("height");
+            $("#background").attr("style")||$("#background").css("width","100%");
+            changeScale();
+        }
+        //获取文件名称
+        function getFildName(id){
+            var aoData=[];
+            aoData.push( { "name": "meetingDoc.id", "value": id } );
+            var xurl="/actions/MeetingDoc.action?getMeetingDocById";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status == true) {
+                            $("#file_name").html(data.body.doc_title);
+                        } else {
+                            showInfoWinWarn("文件名称获取失败" + obj.msg);
+                        }
+                    },
+                    function () {
+                        showInfoWinError("文件名称获取失败！");
+                    }
+            );
+        }
+        //初始化图片的列表
+        function initFilePicList(index){
+            var i=index?index:1;
+            (!index||index==1)&&$("#file_img_list").empty();
+            if(i<=imageCount){
+                $("#file_img_list").append('<li><span>'+i+'</span><div '+(i==1?'class="this"':'')+'><img onload="initFilePicList('+(i+1)+')" src="'+picLoadPath+'/file/'+fileId+'/'+i+'.png"></div></li>');
+            }else{
+                is_loaded=true;
+                initHuaban();
+                closeLoadingToast();
+                getFildName(fileId);
+            }
+        }
+        function initHuaban(callBack) {//初始化画板
+            $('#meeting_drawing_board').CanvasDrawr({
+                background:"background",
+                type:"pencil",
+                rubberEle:"rubber_box",
+                screenLock:false,
+                backgroundImg:$("#file_img_list .this img").attr("src"),
+                callBack:callBack?callBack:""
+            });
+        }
+        function changeBackgroundImg(callBack){//更换背景图片
+            $('#meeting_drawing_board').CanvasDrawr({
+                doing:"changeBackgroundImg",
+                backgroundImg:$("#file_img_list .this img").attr("src"),
+                callBack:callBack?callBack:""
+            });
+        }
+        function prevNextPage(type){//上一页或下一页
+            if(type=="prev"){
+                if($("#file_img_list div.this").parent("li").index()==0){
+                    top.openCustomTap("当前页为首页，无上一页！", 2000);
+                }
+                else{
+                    $("#file_img_list div.this").removeClass("this").parent("li").prev("li").children("div").addClass("this");
+                    changeBackgroundImg();
+                }
+            }else if(type=="next"){
+                if($("#file_img_list div.this").parent("li").index()==$("#file_img_list li").length-1){
+                    top.openCustomTap("当前页为尾页，无下一页！", 2000);
+                }else{
+                    $("#file_img_list div.this").removeClass("this").parent("li").next("li").children("div").addClass("this");
+                    changeBackgroundImg();
+                }
+            }
+        }
+        function initTouchetPosition(type,obj){//初始化开始与结束位置
+//            var canvas_box=document.getElementById("canvas_box"),
+            var viewW =$("#canvas_box").getEleSize("width"),//Math.round(parseFloat(getComputedStyle(canvas_box).width)),//可见宽度
+                    contentW =$("#canvas_parent").getEleSize("width"),//Math.round(parseFloat(getComputedStyle(canvas_box.getElementsByTagName("div")[0]).width)),//内容宽度
+                    scrollLeft =$("#canvas_box").scrollLeft();//滚动宽度
+            console.log(viewW,contentW,scrollLeft);
+            if(viewW>=contentW){ //到达右侧底部时或者小于可见宽度时
+                if(type=="start"){
+                    startPosition=obj
+                }else{
+                    endPosition=obj;
+                    startPosition&&endPosition&&changePage();
+                }
+            }
+            else if(viewW<contentW&&viewW+scrollLeft>=contentW){
+                if(type=="start"){
+                    startPosition=obj;
+                    startPosition.position="right";
+                }else{
+                    endPosition=obj;
+                    endPosition.position="right";
+                    startPosition&&endPosition&&startPosition.position==endPosition.position&&changePage();
+                }
+            }else if(viewW<contentW&&scrollLeft<=0){
+                if(type=="start"){
+                    startPosition=obj;
+                    startPosition.position="left";
+                }else{
+                    endPosition=obj;
+                    endPosition.position="left";
+                    startPosition&&endPosition&&startPosition.position==endPosition.position&&changePage();
+                }
+            }else{
+                endPosition=startPosition=null;
+            }
+        }
+        function changePage(){//更换页面
+            if(Math.abs(endPosition.x-startPosition.x)>Math.abs(endPosition.y-startPosition.y)&&Math.abs(endPosition.x-startPosition.x)>($(window).width()*0.1)){
+                endPosition.x>startPosition.x?prevNextPage("prev"): prevNextPage("next");
+            }
+            endPosition=startPosition=null;
+        }
+        //折叠编辑栏
+        function togglePicList(the){
+            $("#file_img_list").toggleClass("show");
+            toggleImgStrokeOrFill(the);
+        }
+    </script>
+</head>
+<body class="file_browser">
+<header class="not_user_select">
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title" id="header_title">文件浏览</div>
+    <ul class="header_btn_list">
+        <li>
+            <a class="synchronization" href="javascript:void(0);" onclick="isOpenWin('file_detail');"></a>
+        </li>
+        <li>
+            <img id="togglePicListIcon" onclick="togglePicList(this);" src="img/page-turning_red.png">
+        </li>
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav('',event)">
+        </li>
+        <li class="hide">
+            <img src="img/page-turning_red.png">
+            <img src="img/tongbu_red.png">
+        </li>
+    </ul>
+</header>
+<section class="text-center full not_user_select">
+    <h5 class="file_name text-center">
+        <span id="file_name"></span>
+    </h5>
+    <div class="board_container">
+        <div  class="canvas_box" id="canvas_box">
+            <div class="canvas_parent relative pointer" id="canvas_parent">
+                <!--<canvas class="background" id="background"></canvas>-->
+                <img src="" class="background" id="background">
+                <div id="rubber_box" class="rubber_box"></div>
+                <canvas id="meeting_drawing_board"></canvas>
+            </div>
+        </div>
+    </div>
+    <!--文件图片列表-->
+    <div id="file_img_box" class="file_img_box show">
+        <ul id="file_img_list" class="file_img_list list-unstyled">
+            <!--<li>1<div class="this"><img src="http://localhost:8080/file/1484287518755/1.png"></div></li>-->
+            <!--<li>2<div><img src="http://172.16.8.222:8088/client/test_img/下载.png"></div></li>-->
+        </ul>
+    </div>
+</section>
+<div class="aui-mask"></div>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit"><!--规定360安全浏览器使用webki内核进行渲染-->
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=no,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/index.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="./js/aui-dialog.js" ></script>
+    <script type="text/javascript" src="./js/custom-tap.js" ></script>
+    <script type="text/javascript" src="./js/jsPublic.js"></script>
+    <script type="text/javascript" src="./js/index.js"></script>
+    <script>
+        //主程序
+        $(function(){
+//            alert(whichTransitionEvent());
+           if(!callIOSInfo()){
+               createKeepWatchOnLogin();
+           }
+            autologin();
+            getStaticServerIP();
+            $(window).on("offline", function () { //监听网络离线
+                if(!navigator.onLine){
+                    openAuiDialog("text","","当前网络断开，请重新登录！",loginFail);
+                }
+            });
+            $(window).on("online", function () { //监听网络在线
+            });
+        });
+        //获取随机分配的账号
+        function getUserCode(){
+            var aoData=[];
+            aoData.push( { "name": "device_number", "value": getEquipmentSN()} );
+            aoData.push( { "name": "meeting.id", "value": getLocalData("meeting_id")} );
+            var xurl="/actions/ProBaseUser.action?freeLogin";
+            sendAjaxRequest(xurl,aoData,
+                    function (data) {
+                        if (data.status == true) {
+                            if (data.msg == "0") {
+                                openAuiDialog("text", "提示", "该会议尚未启动！", function () {
+                                    $("#meeting_list").get(0) && $("#meeting_list").get(0).contentWindow.updataMeetingList();
+                                });
+                            } else if (data.msg == "2") {
+                                openAuiDialog("text", "提示", "该会议已结束！", function () {
+                                    $("#meeting_list").get(0) && $("#meeting_list").get(0).contentWindow.updataMeetingList();
+                                });
+                            } else if (data.msg == "1") {
+                                is_loggedin = true;
+                                setLocalData('JSESSIONID', data.body.jsessionid);
+                                setLocalData('user_code', data.body.userCode);
+                                if (data.body.notMeetingUser) {
+                                    not_meetingUser = true;
+                                } else {
+                                    setLocalData('user_name', data.body.userName);
+                                }
+                                creatWebSocket(function () {
+                                    openWin("function_list");
+                                });//进入下一页
+                            }
+                        } else {
+                            openAuiDialog("text", "提示", "账号分配失败" + data.msg);
+                        }
+                    },
+                    function () {
+                        openAuiDialog("text", "提示", "账号分配失败");
+                    }
+            );
+        }
+        //是否退出本次会议
+        function outMeeting(){
+            openAuiDialog("callback","提示","确认要退出本次会议？",function(){},function(){
+                not_meetingUser?directLogout(function(){
+                    is_loggedin=not_meetingUser=false;
+                    $("#meeting_list").get(0).contentWindow.updataMeetingList();
+                }):$("#meeting_list").get(0).contentWindow.updataMeetingList();
+                closeWebSocket();//关闭webSoket
+//              loginFail();
+            });
+        }
+        // 创建同步websocket通信并进行连接
+        function creatWebSocket(callBack) {
+            try {
+                var webSocketServerUrl="ws://"+getLocalData('meeting_server_IP')+"/meeting/websocket/synMeeting";//socket地址
+                if ('WebSocket' in window) {
+                    web_socket = new WebSocket(webSocketServerUrl);// 创建一个Socket实例
+                }
+                else if ('MozWebSocket' in window) {
+                    web_socket = new MozWebSocket(webSocketServerUrl);// 创建一个Socket实例
+                } else {
+                    openAuiDialog("text","提示","您的浏览器不支持WebSocket！");
+                    return;
+                }
+                web_socket.onmessage = function (event) {//接收到消息的回调方法
+                    WebSocketDataClass(JSON.parse(event.data));
+                };
+                web_socket.onopen = function (event) {// 打开Socket建立连接回调
+//                    top.openCustomTap("同步websocket连接成功！");
+                    webSoketAutoCut=true;//连接成功
+                    var aoData={"msgType":"login","fromName":getLocalData("user_code"),"meetingId":getLocalData("meeting_id")};
+                    sendWebSocketMsg(aoData);// 发送一个初始化消息
+                    callBack&&callBack();
+                };
+                // 监听Socket的关闭
+                web_socket.onclose = function (event) {
+                    if(webSoketAutoCut){
+                        web_socket=null;
+//                        openAuiDialog("text","提示",'同步websocket自动关闭');
+//                        creatWebSocket();
+                    }else{
+                        is_spokesman=false;
+                        web_socket=null;//  top.openCustomTap("同步websocket正常关闭！");
+                    }
+                };
+                //产生异常的回调
+                web_socket.onerror = function (event) {
+                    if(top.is_spokesman){
+                        is_spokesman=false;
+                        top.closeWin("file_detail");
+                    }
+                    web_socket=null;
+                    openAuiDialog("text","提示",'同步websocket错误');
+//                    creatWebSocket();
+                };
+            } catch(e){
+                openAuiDialog("text","提示","同步WebSocket错误"+e.message);
+            }
+        }
+        //关闭Socket
+        function closeWebSocket(callBack){
+            try{
+                is_spokesman=false;
+                webSoketAutoCut=false;
+                $("#iframe_box .current").siblings(":not(.first)").remove();
+                closeWin($("#iframe_box .current").attr("id"));
+                web_socket.close();
+            }catch(e){
+//                openAuiDialog("text","提示","text","提示","同步WebSocket关闭失败："+e.message);
+            }finally {
+                callBack&&callBack();
+            }
+        }
+        //发送Socket数据
+        function sendWebSocketMsg(data){
+            try{
+                console.log(data);
+//                if ((web_socket.readyState != 1)&&$("#iframe_box iframe").length>1) {
+//                    creatWebSocket();
+//                }else{
+//                    web_socket.send(JSON.stringify(data));// 发送条消息
+//                }
+                if(web_socket){
+                    if(web_socket.readyState == 1){
+                        web_socket.send(JSON.stringify(data));// 发送条消息
+                    }else if(web_socket.readyState == 0){// 延时发送
+                        setTimeout(function(){
+                            web_socket.send(JSON.stringify(data));
+                        },200);
+                    }
+                }
+            }catch(e){
+                if(web_socket&&web_socket.readyState!=2&&web_socket.readyState!=3&&$("#iframe_box iframe").length>1){
+                    creatWebSocket(function(){
+                        sendWebSocketMsg(data);
+                    });
+                }
+                openAuiDialog("text","提示","同步WebSocket发送失败："+e.message);
+            }
+        }
+        //同步Socket数据类型分类
+        function WebSocketDataClass(data){
+            console.log(data);
+            if (data.msgType=="hasMeetingHost") {//判断是否有主持人
+                if (data.hasHost == false) {
+                    openCustomTap("当前同步会议尚无主持人！");
+                    if(not_meetingUser&&$('#iframe_box .current').attr('id') != "file_list"){
+                        openWin("file_list");
+
+                    }else if (!not_meetingUser&&$('#iframe_box .current').attr('id') != "my_file") {
+                        openWin("my_file");
+                    }
+                } else if (data.hasHost == true) {
+                    if (data.fromName == getLocalData("user_code")) {
+                        is_spokesman = true;
+                    } else {
+                        is_spokesman = false;
+                    }
+                    if($("#file_detail").hasClass("current")){
+                        $("#file_detail").get(0).contentWindow.setForceSynchronize(data);
+                    }else{
+                        openWin("file_detail", "fileId=" + data.fileId + "&imageCount=" + data.imageCount + "&curPage=" + data.curPage + "&spokesManCode=" + data.fromName + "&spokesManName=" + encodeURIComponent(data.spokesManName));
+                    }
+                }
+            }
+            //实时通讯
+            else if(data.msgType=="onLineUser"||data.msgType=="singleChat"||data.msgType=="groupChat"){
+                data.msgType=="onLineUser"&&(webSocketInitData=data);
+                $("#chat").get(0)&&$("#chat").get(0).contentWindow.getWebSocketMessage(data);
+            }else if(data.msgType=="synchronizeMeeting"){//同步参会
+                $("#file_detail").get(0)&&$("#file_detail").get(0).contentWindow.setSynchronizeData(data);
+            }
+            else if(data.msgType=="getSynchronizeData"){//同步缓存的数据
+                $("#file_detail").get(0)&&$("#file_detail").get(0).contentWindow.initSynchronizeData(data);
+            }
+            else if(data.msgType=="sendMsg"){//发送消息
+                openAuiDialog("text","管理员发来的信息",data.content);
+            }
+            else if(data.msgType=="rollCall"){//点名
+                openAuiDialog("text","点名","我是"+getLocalData("user_name"));
+            }
+            else if(data.msgType=="applyHost"){//申请主持人
+                if(data.fromName==getLocalData("user_code")){
+                    is_spokesman=true;
+                } else{
+                    is_spokesman=false;
+                }
+                if($("#file_detail").get(0)){
+                    $("#file_detail").get(0).contentWindow.setSpeak(data);
+                }
+            }
+            else if(data.msgType=="giveUpSpeak"){//放弃主持人
+                if($("#file_detail").get(0)){
+                    $("#file_detail").get(0).contentWindow.othergiveUpSpeak(data);
+                }
+            }
+            else if(data.msgType=="forceSynchronize"){//强制同步
+                if(data.fromName!=getLocalData("user_code")){
+                    top.sendWebSocketMsg({"msgType": "hasMeetingHost"});//判断当前会议同步是否有主讲人
+                }
+            }
+            else if(data.msgType=="fileConverterSuccess"){//文件变动
+
+            }
+            else if(data.msgType=="endMeeting"){//结束会议
+                if($("#iframe_box iframe").length>1){
+                    webSoketAutoCut=false;
+                    closeWebSocket();//关闭webSoket
+                }
+            }
+            else if(data.msgType=="isOnline"){
+//                console.log("同步接收时间："+new Date().getTime());
+                clearTimeout(web_socket_timer);
+                web_socket_timer=null;
+            }
+        }
+        //监视socket类型分类
+        function keepWatchOnDataClass(data){
+            console.log(data);
+            if(data.msgType=="endMeeting"){//结束会议
+                if(not_meetingUser){
+                    directLogout(function(){
+                        is_loggedin=not_meetingUser=false;
+                        $("#meeting_list").get(0).contentWindow.updataMeetingList();
+                    });
+                }else{
+                    $("#meeting_list").get(0).contentWindow.updataMeetingList();
+                }
+            }
+            else if(data.msgType=="beginMeeting"){//开始会议
+                $("#meeting_list").get(0).contentWindow.updataMeetingList();
+            }
+            else if(data.msgType=="isOnline"){
+//                console.log("监控接收时间："+new Date().getTime());
+                clearTimeout(keepWatchOn_soket_timer);
+                keepWatchOn_soket_timer=null;
+            }
+        }
+    </script>
+</head>
+<body class="index">
+<div class="iframe_box" id="iframe_box">
+    <iframe class="current first" src="" frameborder="0" allowfullscreen="allowfullscreen" marginheight="0" marginwidth="0"></iframe>
+</div>
+</body>
+</html>

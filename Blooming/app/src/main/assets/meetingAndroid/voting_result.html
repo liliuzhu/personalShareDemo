@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>投票结果</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="./css/voting_result.css" rel="stylesheet">
+    <script src="./js/jquery-1.11.3.min.js"></script>
+    <!--<script src="./js/ichart.latest.min.js"></script>-->
+    <script src="./js/jsPublic.js"></script>
+    <script>
+        $(function(){
+//            drawChart("canvasDiv1","十三陵水库烧烤1",50,"#ff4134");
+//            drawChart("canvasDiv2","十三陵水库烧烤2",50,"#f8e81c");
+//            drawChart("canvasDiv3","十三陵水库烧烤3",20,"#4990e2");
+//            drawChart("canvasDiv4","十三陵水库烧烤4",10,"#50e3c2");
+        });
+//        function drawChart(canvasId,voteText,voteValue,voteColor){
+//            var data = [
+//                {name : voteText,value : voteValue,color:voteColor},
+//                {name : '其他',value : 100-voteValue,color:'#f5f5f5'}
+//            ];
+//            var chart = new iChart.Donut2D({
+//                render : canvasId,
+//                center:{
+//                    text:voteValue+'%',
+//                    color:'#333',
+//                    fontsize:14
+//                },
+//                data: data,
+//                sub_option:{
+//                    label:false,
+//                    color_factor : 0.1
+//                },
+//                showpercent:true,
+//                decimalsnum:1,
+//                width : 150,
+//                height : 150,
+//                radius:60
+//            });
+//            chart.draw();
+//        }
+    </script>
+</head>
+<body class="voting_result">
+<header>
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title">投票结果</div>
+    <ul class="header_btn_list">
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav(12,event)">
+        </li>
+    </ul>
+</header>
+<section class="text-center">
+    <div class="panel panel-default">
+        <div class="panel-heading">关于部外出踏青地点的投票结果</div>
+        <div class="panel-body">
+            <!--<ul class="list-unstyled list-inline canvasChart">-->
+                <!--<li>-->
+                    <!--<div id="canvasDiv1"></div>-->
+                    <!--&lt;!&ndash;<p></p>&lt;!&ndash;遮盖canvas-border&ndash;&gt;&ndash;&gt;-->
+                    <!--<span>十三陵水库烧烤1</span>-->
+                <!--</li>-->
+                <!--<li>-->
+                    <!--<div id="canvasDiv2"></div>-->
+                    <!--&lt;!&ndash;<p></p>&ndash;&gt;-->
+                    <!--<span>十三陵水库烧烤2</span>-->
+                <!--</li>-->
+                <!--<li>-->
+                    <!--<div id="canvasDiv3"></div>-->
+                    <!--&lt;!&ndash;<p></p>&ndash;&gt;-->
+                    <!--<span>十三陵水库烧烤3</span>-->
+                <!--</li>-->
+                <!--<li>-->
+                    <!--<div id="canvasDiv4"></div>-->
+                    <!--&lt;!&ndash;<p></p>&ndash;&gt;-->
+                    <!--<span>十三陵水库烧烤4</span>-->
+                <!--</li>-->
+            <!--</ul>-->
+            <ul class="list-unstyled option_votes_list">
+                <li class="flex flex_direction_horizontal">
+                    <div class="flex_child text-right option_name ellipsis">十三陵水库烧烤1</div>
+                    <div class="flex_child option_chart"><span></span></div>
+                    <div class="flex_child text-left option_votes ellipsis">15票（10%）</div>
+                </li>
+                <li class="flex flex_direction_horizontal">
+                    <div class="flex_child text-right option_name ellipsis">十三陵水库烧烤1</div>
+                    <div class="flex_child option_chart"><span></span></div>
+                    <div class="flex_child text-left option_votes ellipsis">15票（10%）</div>
+                </li>
+                <li class="flex flex_direction_horizontal">
+                    <div class="flex_child text-right option_name ellipsis">十三陵水库烧烤1</div>
+                    <div class="flex_child option_chart"><span></span></div>
+                    <div class="flex_child text-left option_votes ellipsis">15票（10%）</div>
+                </li>
+            </ul>
+            <a onclick="top.closeWin($('body').attr('class'));" href="javascript:void(0);" class="close_btn btn">关 闭</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

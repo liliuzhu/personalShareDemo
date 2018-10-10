@@ -1,0 +1,317 @@
+.meeting_list{
+  section{
+    background-color: #fff;
+  }
+  //.meeting_status{
+  //  margin-bottom: 0.8rem;
+  //  font-size: 1.2rem;
+  //  li span{
+  //    display: inline-block;
+  //    vertical-align: middle;
+  //    width: 1.5rem;
+  //    height: 1.5rem;
+  //    border-radius: 5px;
+  //    margin-right: 0.5rem;
+  //  }
+  //  li:first-child span{
+  //    background-color: #148D84;
+  //  }
+  //  li:nth-child(2) span{
+  //    background-color: #FDB553;
+  //  }
+  //  li:nth-child(3) span{
+  //    background-color: #F26C4F;
+  //  }
+  //}
+  .container_box{
+    padding-bottom: 0.8rem;
+    position: relative;
+    text-align: left;
+  }
+  div.left_side,div.right_side{
+    vertical-align: top;
+    display: inline-block;
+    background-color: #fff;
+    text-align: center;
+  }
+  div.left_side{
+    width:35%;
+    padding:0;
+    border-right: 1.8rem solid #fff;
+    >*{
+      padding-left: 20px;
+      padding-right: 20px;
+      background-color: #F9FAFA;
+      box-shadow: 1px 1px 3px 0 rgba(178,178,178,0.34);
+    }
+    .serch_box{
+      position:relative;
+      margin:1.5rem 0;
+      //margin-bottom: 1.5rem;
+      //padding-top: 1.5rem;
+      >input{
+        display: inline-block;
+        width: 100%;
+        height:3.6rem;
+        border: 1px solid #D8D8D8;
+        border-radius: 2px;
+        padding-right: 4rem;
+        padding-left: 1rem;
+      }
+      >a{
+        height: 100%;
+        display: block;
+        position:absolute;
+        border-radius: 2px;
+        top:0;
+        right: 0;
+        width: 4rem;
+        border: 1px solid #D8D8D8;
+        font-size: 2rem;
+        color:#d8d8d8;
+        font-weight: normal;
+        >span{
+          display: block;
+          height: 100%;
+          line-height: 3.6rem;
+        }
+      }
+    }
+  }
+  .system_time{
+    padding-bottom: 2.5rem;
+    padding-top: 2.5rem;
+    margin-bottom: 1rem;
+    h1{
+      margin-bottom: 1rem;
+      font-size: 4.5rem;
+    }
+    p{
+      font-size: 1.7rem;
+    }
+  }
+  .system_date{
+    padding-bottom: 1.8rem;
+    padding-top: 1.8rem;
+    P{
+      margin-left: 5px;
+      padding-left: 2rem;
+      background: transparent url(../img/icon-star.png) no-repeat left center;
+      background-size: auto 80%;
+      font-size: 1.4rem;
+      a{
+        color:#F26C4F;
+        font-size: 1.5rem;
+        line-height: 2rem;
+        display: inline-block;
+        padding: 0 5px;
+      }
+    }
+  }
+  div.right_side{
+    padding-bottom: 0.8rem;
+    width:65%;
+    height: 100%;
+    position: absolute;
+    height: 100%;
+    right: 0;
+    >div{
+      height: 100%;
+      >.row{
+        display: table;
+        margin-bottom: 1.6rem;
+        table-layout: fixed;
+        width: 100%;
+        >div{
+          display: table-cell;
+          vertical-align: top;
+          float: none;
+          width: 50%;
+        }
+        .panel-body{
+          //min-height: 16.5rem;
+          min-height: 17rem;
+          max-height: 19.8rem;
+          overflow: auto;
+        }
+        >div:first-child .panel-body,>div:nth-child(2){
+          border-left: 1px solid #ddd;
+        }
+        ul.meeting_list_item{
+          >li{
+            position: relative;
+            cursor: pointer;
+            float:left;
+            width:50%;
+            padding:0.6rem 0.8rem;
+            border: 0.1rem solid #ddd;
+            border-left-width: 0.25rem;
+            border-top: none;
+            color:#6b6b6b;
+            background-color:#F3F3F3;
+            >span{
+              line-height: 1.8rem;
+            }
+          }
+          >li:after{
+            font-size: 1.1rem;
+            position: absolute;
+            top:0.6rem;
+            right: 0.8rem;
+            background: transparent url(../img/meeting_statue0.png) no-repeat left center;
+            background-size: auto 80%;
+            padding-left: 1.5rem;
+          }
+          >li.meeting_statue0{
+            border-left-color: #148D84;
+          }
+          >li.meeting_statue0:after{
+            content: "未开始";
+            color: #148D84;
+          }
+          >li.meeting_statue0.active,>li.meeting_statue0:hover{
+            background-color:#E1F7F1;
+            border-bottom-color: #148D84;
+          }
+          >li.meeting_statue1{
+            border-left-color: #FDB553;
+          }
+          >li.meeting_statue1:after{
+            content: "召开中";
+            color: #FDB553;
+            background-image: url(../img/meeting_statue1.png);
+          }
+          >li.meeting_statue1.active,>li.meeting_statue1:hover{
+            background-color:#FCF2E4;
+            border-bottom-color: #FDB553;
+          }
+          >li.meeting_statue2{
+            border-left-color: #F26C4F;
+          }
+          >li.meeting_statue2:after{
+            content: "已结束";
+            color: #F26C4F;
+            background-image: url(../img/meeting_statue2.png);
+          }
+          >li.meeting_statue2.active,>li.meeting_statue2:hover{
+            background-color:#FDF0EC;
+            border-bottom-color: #F26C4F;
+          }
+        }
+      }
+      ul.meeting_detail>li{
+        padding:13px 10px 13px 25px;
+        border-bottom: 1px solid #ddd;
+        >span{
+          display: table-cell;
+          vertical-align: top;
+        }
+        >span:first-child{
+          color:#adadad;
+          padding-right:0.5em;
+          width: 6em;
+          text-align: right;
+        }
+        >span:last-child{
+          color:#202328;
+          font-size: 15px;
+          line-height: 20px;
+          min-height: 20px;
+        }
+      }
+    }
+  }
+  //修改日历插件
+  .fc-event {
+    border: 1px solid #0096ff;
+    background-color: #0096ff;
+    width: 20px!important;
+    text-align: center;
+    max-width: 30px;
+    border-radius: 50%!important;
+  }
+  .fc-day-content{
+    height: 20px;
+  }
+  .fc-header-center{
+    h2{
+      font-size: 22px;
+    }
+    text-align: right;
+  }
+  .fc-header-right{
+    width: 0;
+  }
+  ///*修改日历*/
+  //.ui-datepicker {
+  //  width: 100%!important;
+  //  margin: auto;
+  //}
+  //.ui-datepicker td a {
+  //  padding: 0.5em;
+  //}
+  //
+  /*修改boot面板*/
+  .panel-default{
+    border: none;
+    box-shadow: 2px 2px 7px 1px rgba(178,178,178,0.34);
+  }
+  .panel-heading {
+    background-color: #fbfbfb;
+    border:none;
+    font-size: 14px;
+    color: #6b6b6b;
+    padding: 13px 0 13px 14px;
+    letter-spacing: 0;
+    position: relative;
+    border-radius: 0;
+    border-bottom: 1px solid #ddd;
+  }
+  .panel-body{
+    padding: 0;
+  }
+}
+
+/*修改轮播*/
+//.carousel-control{
+//  width:10%;
+//}
+//.carousel-control.left,.carousel-control.right {
+//  color:#000;
+//  font-size: 20px;
+//  text-shadow: none;
+//  opacity:0.5;
+//  background-image: -webkit-linear-gradient(-90deg, rgba(255,255,255,0.4) 0%, #FFFFFF 50%);
+//  background-image: -o-linear-gradient(-90deg, rgba(255,255,255,0.4) 0%, #FFFFFF 50%);
+//}
+//ul.meeting_file{
+//  padding:35px 8%;
+//  overflow: hidden;
+//}
+//ul.meeting_file>li{
+//  cursor: pointer;
+//  float:left;
+//  width:16.6%;
+//  position:relative;
+//  margin-bottom: 40px;
+//}
+//ul.meeting_file>li>img{
+//  height: 60px;
+//}
+//ul.meeting_file>li>div{
+//  width:100%;
+//  top:60px;
+//  left:0;
+//}
+//ul.meeting_file>li>div>a{
+//  display:inline-block;
+//  width: 60%;
+//  color:#585858;
+//  font-size: 10px;
+//  text-shadow: none;
+//  overflow: hidden;
+//  -ms-text-overflow: ellipsis;
+//  text-overflow: ellipsis;
+//  white-space: nowrap;
+//}
+

@@ -1,0 +1,413 @@
+body{
+  width: 100%;
+  overflow: hidden;
+  max-width:100%;
+  min-width: 100%;
+}
+.file_detail,.file_browser{
+  //同步参会
+  header{
+    box-shadow: none;
+    width: 100%;
+    .forceSynchronize{//强制
+      background:transparent url(../img/qiangzhi.png) no-repeat center center;
+      background-size: 100% 100%;
+    }
+    .forceSynchronize:active,.forceSynchronize:hover{//强制
+      background-image:url(../img/qiangzhi_red.png);
+    }
+    .asynchronous{//异步
+      background:transparent url(../img/yibu.png) no-repeat center center;
+      background-size: 100% 100%;
+    }
+    .asynchronous:active,.asynchronous:hover{//异步
+      background-image:url(../img/yibu_red.png);
+    }
+    .synchronization{//同步
+      background:transparent url(../img/tongbu.png) no-repeat center center;
+      background-size: 100% 100%;
+    }
+    .synchronization:active,.synchronization:hover{//同步
+      background-image:url(../img/tongbu_red.png);
+    }
+    .filter{
+      background: transparent url("../img/icon-huatong_no.png") no-repeat center center;
+      background-size: 2.2rem 2.2rem;
+    }
+    .grayscale{//黑白
+      opacity: 0;
+    }
+  }
+  section{
+    overflow: hidden;
+    width: 100%;
+    //padding-top: 75px;
+  }
+  .footer_control,.file_img_box,.file_img_box.show,.footer_control.show{
+    -webkit-transition: -webkit-transform 0.3s linear 0s;
+    -ms-transition: -ms-transform 0.3s linear 0s;
+    -moz-transition: -moz-transform 0.3s linear 0s;
+    -o-transition: -o-transform 0.3s linear 0s;
+    transition: transform 0.3s linear 0s;
+    -webkit-transform-style: preserve-3d;     /*设置内嵌的元素在 3D 空间如何呈现：保留 3D*/
+    -webkit-backface-visibility: hidden;      /*(设置进行转换的元素的背面在面对用户时是否可见：隐藏)*/
+    z-index: 200;
+  }
+  .footer_control{
+    bottom: 0;
+    left: 0;
+    transform: translate3d(0,65px,0);
+    -webkit-transform: translate3d(0,65px,0);
+    -moz-transform: translate3d(0,65px,0);
+    -o-transform: translate3d(0,65px,0);
+    -ms-transform: translate3d(0,65px,0);
+  }
+  .file_img_box{
+    transform: translate3d(-180px,0,0);
+    -webkit-transform: translate3d(-180px,0,0);
+    -moz-transform: translate3d(-180px,0,0);
+    -o-transform: translate3d(-180px,0,0);
+    -ms-transform: translate3d(-180px,0,0);
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    padding: 100px 0 0;
+    background-color: #202328;
+    color: #ADADAD;
+    overflow: hidden;
+    .file_img_list{
+      height: 100%;
+      overflow: auto;
+      padding:0 20px;
+      min-width: 170px;
+    }
+    li:last-child{
+      padding-bottom: 50px;
+    }
+    li{
+      padding: 10px 0;
+      span{
+        display: inline-block;
+        vertical-align: top;
+        min-width: 2em;
+        text-align: left;
+      }
+      div{
+        display: inline-block;
+        vertical-align: top;
+        width: 102px;
+        background-color: #fff;
+        border: 2px solid transparent;
+        img{
+          width: 100%;
+          min-width: 98px;
+        }
+      }
+      //div.this{
+      //  border-color: #DC5A52;
+      //}
+    }
+    li.this{
+      color: #fff;
+      div{
+        border-color: #DC5A52;
+      }
+    }
+  }
+  .file_img_box.show{
+    transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0);
+    -moz-transform: translate3d(0,0,0);
+    -o-transform: translate3d(0,0,0);
+    -ms-transform: translate3d(0,0,0);
+  }
+  .footer_control.show{
+    transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0);
+    -moz-transform: translate3d(0,0,0);
+    -o-transform: translate3d(0,0,0);
+    -ms-transform: translate3d(0,0,0);
+  }
+  .file_name{
+    width: 100%;
+    line-height: 24px;
+    height:24px;
+    margin: 0;
+    padding: 0;
+    background-color: #FF9F96;
+    color: #fff;
+    z-index: 300;
+    position: absolute;
+    left: 0;
+  }
+  .board_container{
+    width: 100%;
+    height:100%;
+    background-color: #aaa;
+    overflow: hidden;
+    padding: 25px 1% 1%;
+  }
+  .canvas_box{
+    width: 100%;
+    height:100%;
+    overflow: auto;
+    margin:0;
+  }
+  .canvas_parent{
+    height: 99%;
+    margin:0 auto;
+    overflow: hidden;
+    display: inline-block;
+    position: relative;
+    background: #fff no-repeat center center;
+    background-size: 100% 100%;
+    padding: 0;
+    .background{
+      transform-origin:0px 0px 0px;
+      position: relative;
+      top: 0;
+      left:0;
+      height:100%;
+      width: 100%;
+      margin: 0;
+    }
+    .rubber_box{
+      z-index: 50;
+    }
+    canvas{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left:0;
+      z-index: 100;
+    }
+    .virtual_page{
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left:0;
+      //backface-visibility:hidden;
+      transform-origin:0px 0px 0px;
+      z-index: 0;
+    }
+    .virtual_page.nextPage{
+      z-index: 1;
+      animation: nextPage 0.3s ease-in 0s 1;
+      -moz-animation: nextPage 0.3s ease-in 0s 1; /* Firefox */
+      -webkit-animation: nextPage 0.3s ease-in 0s 1; /* Safari and Chrome */
+      -o-animation: nextPage 0.3s ease-in 0s 1; /* Opera */
+    }
+    .background.prevPage{
+      animation: prevPage 0.3s ease-in 0s 1;
+      -moz-animation: prevPage 0.3s ease-in 0s 1; /* Firefox */
+      -webkit-animation: prevPage 0.3s ease-in 0s 1; /* Safari and Chrome */
+      -o-animation: prevPage 0.3s ease-in 0s 1; /* Opera */
+    }
+  }
+  //引导图
+  .guide{
+    background:#fff url("../img/yibu.png") no-repeat center center;
+    background-size: 2.2rem auto;
+    border-radius: 0.3rem 0.3rem 0 0;
+    @bsize:4rem;
+    height: @bsize;
+    width: @bsize;
+    position: absolute;
+    overflow: visible;
+    z-index: 6000;
+    top: 22px;
+    left: 0;
+    display: none;
+    margin-top: (2.2-@bsize)/2;
+    margin-left: (2.2-@bsize)/2;
+    .guide_main{
+      border-radius: 0.3rem;
+      position: absolute;
+      background-color: #fff;
+      top: @bsize;
+      right: -1rem;
+      width: 24rem;
+      >div{
+        position: relative;
+        width: 100%;
+      }
+      .main_header,.main_footer{
+        font-size: 1rem;
+        padding: 1rem;
+      }
+      .main_header{
+        .close_guide{
+          position: absolute;
+          display: block;
+          height: 1rem;
+          width: 1rem;
+          right: 0.7rem;
+          top: 0.7rem;
+          background: transparent url(../img/close_guide.png) no-repeat center center;
+          background-size: 100% 100%;
+        }
+        >div{
+          display: none;
+        }
+        p{
+          margin-top: 0.6rem;
+          font-size: 1rem;
+          line-height: 1.5rem;
+          min-height: 3rem;
+        }
+      }
+      .main_footer{
+        padding: 1.2rem 1rem;
+        >div{
+          display: none;
+        }
+        a{
+          font-size: 0.8rem;
+          padding: 2px 10px;
+          margin-left: 0;
+        }
+      }
+      img{
+        width: 100%;
+        opacity: 0;
+      }
+      .main_body{
+        background: transparent url(../img/guide1.png) no-repeat center center;
+        background-size: 100% 100%;
+      }
+    }
+  }
+  .guide1{
+    background-image: url("../img/yibu.png");
+    .guide_main{
+      .main_header .header1{display: block}
+      .main_body{
+        background-image: url("../img/guide1.png");
+      }
+      .main_footer .footer1{
+        display: block;
+      }
+    }
+  }
+  .guide2{
+    background-image: url("../img/qiangzhi.png");
+    .guide_main{
+      .main_header .header2{display: block}
+      .main_body{
+        background-image: url("../img/guide2.png");
+      }
+      .main_footer .footer2{
+        display: block;
+      }
+    }
+  }
+  .guide3{
+    background-image: url("../img/icon-bianji.png");
+    .guide_main{
+      .main_header .header3{display: block}
+      .main_body{
+        background-image: url("../img/guide3.png");
+      }
+      .main_footer .footer3{
+        display: block;
+      }
+    }
+  }
+  .guide4{
+    background-image: url("../img/page-turning.png");
+    .guide_main{
+      .main_header .header4{display: block}
+      .main_body{
+        background-image: url("../img/guide4.png");
+      }
+      .main_footer .footer4{
+        display: block;
+      }
+    }
+  }
+  .guide5{
+    background-image: url("../img/icon-huatong.png");
+    .guide_main{
+      .main_header .header5{display: block}
+      .main_body{
+        background-image: url("../img/guide5.png");
+      }
+      .main_footer .footer5{
+        display: block;
+      }
+    }
+  }
+  .guide6{
+    background-image: url("../img/icon-menu.png");
+    .guide_main{
+      .main_header .header6{display: block}
+      .main_body{
+        background-image: url("../img/guide6.png");
+      }
+      .main_footer .footer6{
+        display: block;
+      }
+    }
+  }
+  .guide.guide7{
+    background:transparent;
+    left: 50%;
+    top: 50%;
+    margin: -2rem 0 0 -2rem;
+    .guide_main{
+      .main_header .header7{display: block}
+      left: -10rem;
+      top: -11em;
+      .main_body{
+        background-image: url("../img/guide7.png");
+      }
+      .main_footer .footer7{
+        display: block;
+      }
+    }
+  }
+}
+
+@-webkit-keyframes nextPage{
+  0%{-webkit-transform: rotateY(0deg);}
+  100%{-webkit-transform:rotateY(-90deg);}
+
+}
+@-o-keyframes nextPage{
+  0%{-o-transform: rotateY(0deg);}
+  100%{-o-transform:rotateY(-90deg);}
+
+}
+@-moz-keyframes nextPage{
+  0%{-moz-transform: rotateY(0deg);}
+  100%{-moz-transform:rotateY(-90deg);}
+
+}
+@keyframes nextPage{
+  0%{transform: rotateY(0deg);}
+  100%{transform:rotateY(-90deg);}
+
+}
+@-webkit-keyframes prevPage{
+  0%{-webkit-transform: rotateY(-90deg);}
+  100%{-webkit-transform:rotateY(0deg);}
+
+}
+@-o-keyframes prevPage{
+  0%{-o-transform: rotateY(-90deg);}
+  100%{-o-transform:rotateY(0deg);}
+
+}
+@-moz-keyframes prevPage{
+  0%{-moz-transform: rotateY(-90deg);}
+  100%{-moz-transform:rotateY(0deg);}
+
+}
+@keyframes prevPage{
+  0%{transform: rotateY(-90deg);}
+  100%{transform:rotateY(0deg);}
+
+}

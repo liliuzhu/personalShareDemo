@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0, user-scalable=no,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>文件浏览</title>
+    <link href="./css/bootstrap.min.3.3.5.css" rel="stylesheet">
+    <link href="./css/cssPublic.css" rel="stylesheet">
+    <link href="css/file_detail-file_browser.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="js/scrollevents.min.js"></script>
+    <script type="text/javascript" src="./js/jsPublic.js"></script>
+    <script type="text/javascript" src="./js/file_detail.js"></script>
+    <script type="text/javascript" src="./js/custom-loading.js"></script>
+    <script>
+        var fileId=getUrlParam(document.URL,"fileId");//文件ID
+        var imageCount=parseInt(getUrlParam(document.URL,"imageCount"));//图片数量
+        var curPage=getUrlParam(document.URL,"curPage");//图片当前页
+        var is_loaded=false;//是否加载完毕
+        var is_synchronize=false;
+        //位置变量
+        var startPosition=null,endPosition=null;
+        //图片静态服务器地址
+//        var picLoadPath=getLocalData("picLoadPath");
+        var canvas_boxHeight=null;
+//        var $this=null;
+        //放大缩小控制变量
+//        var picture_loaded=false ;
+        //双击变量
+        var clickTime=null;
+        //换页控制变量
+        var is_canChangeStatus=false;
+//        //但也图片数量
+//        var maxPicNum=10,loadPicNum=5;
+        $(window).load(function(){
+            $Parent=$("#canvas_parent");
+            canvas_boxHeight=$("#canvas_box").height();
+            default_height=$Parent.height();
+            openLoadingToast();//打开loading
+            initEvent();
+            setTimeout(windowReady,700);
+        });
+//        $(function(){
+//            $Parent=$("#canvas_parent");
+//            canvas_boxHeight=$("#canvas_box").height();
+//            default_height=$Parent.height();
+//            openLoadingToast();//打开loading
+//            initEvent();
+//            setTimeout(windowReady,700);
+//        });
+        function windowReady(){
+            curPage=curPage?curPage:1;
+            initFilePicList();
+        }
+    </script>
+</head>
+<body class="file_browser">
+<header class="not_user_select">
+    <a href="javascript:void(0);" class="header_back middle">
+        <img src="./img/icon-back.png">
+    </a>
+    <div class="header_title" id="header_title">文件浏览</div>
+    <ul class="header_btn_list">
+        <li>
+            <a class="synchronization" href="javascript:void(0);" onclick="isOpenWin('file_detail');"></a>
+        </li>
+        <li>
+            <img id="togglePicListIcon" onclick="togglePicList(this);" src="img/page-turning_red.png">
+        </li>
+        <li>
+            <img src="./img/icon-menu.png" onclick="setFixedNav('',event)">
+        </li>
+        <li class="hide">
+            <img src="img/page-turning_red.png">
+            <img src="img/tongbu_red.png">
+        </li>
+    </ul>
+</header>
+<section class="text-center full not_user_select">
+    <h5 class="file_name text-center">
+        <span id="doc_title"></span>
+    </h5>
+    <div class="board_container">
+        <div  class="canvas_box scrolling" id="canvas_box">
+            <div class="canvas_parent relative pointer" id="canvas_parent">
+                <!--<canvas class="background" id="background"></canvas>-->
+                <img src="" class="virtual_page" id="virtual_page" alt="虚拟页">
+                <img src="" class="background" id="background">
+                <div id="rubber_box" class="rubber_box"></div>
+                <canvas id="meeting_drawing_board"></canvas>
+            </div>
+        </div>
+    </div>
+    <!--文件图片列表-->
+    <div id="file_img_box" class="file_img_box show">
+        <ul id="file_img_list" class="file_img_list list-unstyled scrolling">
+            <!--<li>1<div class="this"><img src="http://localhost:8080/file/1484287518755/1.png"></div></li>-->
+            <!--<li>2<div><img src="http://172.16.8.222:8088/client/test_img/下载.png"></div></li>-->
+        </ul>
+    </div>
+</section>
+<div class="aui-mask"></div>
+</body>
+</html>
