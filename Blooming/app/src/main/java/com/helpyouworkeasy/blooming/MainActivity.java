@@ -32,9 +32,12 @@ import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
-import android.widget.LinearLayout;
-import android.widget.RadioGroup;
-import android.widget.Toast;
+//import android.widget.LinearLayout;
+//import android.widget.RadioGroup;
+//import android.widget.Toast;
+//import android.widget.Button;
+//import android.widget.FrameLayout;
+import android.widget.*;
 
 
 import java.io.File;
@@ -48,7 +51,6 @@ import android.view.View.OnClickListener;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.WebSettings.RenderPriority;
-import android.widget.Button;
 
 
 import android.annotation.TargetApi;
@@ -57,9 +59,6 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Handler;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-
-
 
 public class MainActivity extends Activity{
     private WebView webView;
@@ -77,7 +76,6 @@ public class MainActivity extends Activity{
     private WebChromeClient.CustomViewCallback customViewCallback;
 
     private String newPower;//最新电量
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,43 +153,48 @@ public class MainActivity extends Activity{
     };
 
 
-    class JSBridge{   // 代理对象
+    class JSInterface{   // 代理对象
         @JavascriptInterface //注意这里的注解。出于安全的考虑，4.2 之后强制要求，不然无法从 Javascript 中发起调用
-        public void AndroidToastMessage(String message){
+        public void AndroidToastMessage(String message) {
             toastMessage(message);
         }
         @JavascriptInterface
-        public void AndroidCloseApp(){
+        public void AndroidCloseApp() {
             closeApp();
         }
+        @JavascriptInterface
+        public String getAndroidEquipmentPower(){
+            return  getEquipmentPower();
+        }
+        @JavascriptInterface
+        public String getAndroidEquipmentSN() {
+            return getEquipmentSN();
+        }
     }
-
-    @JavascriptInterface  //js调用比写声明/sdk17版本以上加上注解
+    public void button1Click(View view) { // 按钮点击事件
+        toastMessage("native button1被点击");
+//        webView.loadUrl("javascript:WebViewJavascriptBridge.jsBridge()"); //调用html中的js
+    }
+    public void button2Click(View view) { // 按钮点击事件
+        toastMessage("native button2被点击");
+//        webView.loadUrl("javascript:WebViewJavascriptBridge.jsBridge()"); //调用html中的js
+    }
+//    @JavascriptInterface  //js调用比写声明/sdk17版本以上加上注解
     public void toastMessage(String message) { //安卓原生弹框
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        customUtil.showToast(getApplicationContext(), message);
+//        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
     //获取设备电量
-    @JavascriptInterface
     public String getEquipmentPower(){
         return  newPower;
     }
     //退出app
-    @JavascriptInterface
     public void closeApp() {
 //		 退出程序
         finish();
     }
-//    @JavascriptInterface
-//    public void againLogin() {
-//        //重新登录
-////        toastMessage("重新登录");
-////        webView.loadUrl("file:///android_asset/meetingAndroid/login.html");
-////        setContentView(R.layout.activity_main);
-//    }
     //获取设备号
-    @JavascriptInterface
-    public static String getEquipmentSN() {
-//        String serialNum = ;
+    public String getEquipmentSN() {
         return android.os.Build.SERIAL;
     }
     // 打开进度条
@@ -248,7 +251,6 @@ public class MainActivity extends Activity{
         settings.setAppCacheMaxSize(1024*1024*512);//设置缓冲大小，我设的是512M
         String appCachePath = this.getApplicationContext().getDir("cache" , Context.MODE_PRIVATE).getPath();
         settings.setAppCachePath(appCachePath);
-//	 	settings.setCacheMode(WebSettings.LOAD_DEFAULT);  // 建议缓存策略为，判断是否有网络，有的话，使用LOAD_DEFAULT,无网络时，使用LOAD_CACHE_ELSE_NETWORK
         settings.setAllowFileAccess(true); // 允许访问文件
 //        settings.setAllowFileAccessFromFileURLs(true);
         settings.setBuiltInZoomControls(false);//设置支持两指缩放手势
@@ -258,7 +260,13 @@ public class MainActivity extends Activity{
         settings.setBuiltInZoomControls(false);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); //屏幕常亮
         // web加载页面优先使用缓存加载
-        settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+//        settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+//        settings.setCacheMode(WebSettings.LOAD_DEFAULT);  // 建议缓存策略为，判断是否有网络，有的话，使用LOAD_DEFAULT,无网络时，使用LOAD_CACHE_ELSE_NETWORK
+        //缓存模式如下：
+        //LOAD_CACHE_ONLY: 不使用网络，只读取本地缓存数据
+        //LOAD_DEFAULT: （默认）根据cache-control决定是否从网络上取数据。
+        //LOAD_NO_CACHE: 不使用缓存，只从网络获取数据.
+        //LOAD_CACHE_ELSE_NETWORK，只要本地有，无论是否过期，或者no-cache，都使用缓存中的数据。
         settings.setPluginState(WebSettings.PluginState.ON);// 没有的话会黑屏 支持插件
 
         //扩大比例的缩放
@@ -337,7 +345,6 @@ public class MainActivity extends Activity{
         // TODO Auto-generated method stub
         // 当打开页面时 显示进度条 页面打开完全时 隐藏进度条
         webView.setWebChromeClient(new WebChromeClient() { // 让webview对象支持解析alert()等特殊的javascript语句
-
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 // TODO Auto-generated method stub
@@ -357,85 +364,85 @@ public class MainActivity extends Activity{
             }
             /*** 视频播放相关的方法 **/
 
-            @Override
-            public View getVideoLoadingProgressView() {
-                FrameLayout frameLayout = new FrameLayout(MainActivity.this);
-                frameLayout.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-                return frameLayout;
-            }
+//            @Override
+//            public View getVideoLoadingProgressView() {
+//                FrameLayout frameLayout = new FrameLayout(MainActivity.this);
+//                frameLayout.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+//                return frameLayout;
+//            }
 
-            @Override
-            public void onShowCustomView(View view, CustomViewCallback callback) {
-                showCustomView(view, callback);
-            }
+//            @Override
+//            public void onShowCustomView(View view, CustomViewCallback callback) {
+//                showCustomView(view, callback);
+//            }
 
-            @Override
-            public void onHideCustomView() {
-                hideCustomView();
-            }
+//            @Override
+//            public void onHideCustomView() {
+//                hideCustomView();
+//            }
 
         });
 
         //实现js页面调用android的方法,及android的方法里面再调用js页面的js函数,实现互调的过程.
         //js调用安卓的接口
 //        webView.addJavascriptInterface(this, "android");
-        webView.addJavascriptInterface(new JSBridge(), "JSBridge");
+        webView.addJavascriptInterface(new JSInterface(), "JSInterface");
         // webView加载web资源
         webView.loadUrl("http://172.18.2.247:8081");
 //		startReadUrl("file:///android_asset/meetingAndroid/login.html");
     }
 
 
-    /** 视频播放全屏 **/
-    private void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
-        // if a view already exists then immediately terminate the new one
-        if (customView != null) {
-            callback.onCustomViewHidden();
-            return;
-        }
-
-        MainActivity.this.getWindow().getDecorView();
-
-        FrameLayout decor = (FrameLayout) getWindow().getDecorView();
-        fullscreenContainer = new FullscreenHolder(MainActivity.this);
-        fullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
-        decor.addView(fullscreenContainer, COVER_SCREEN_PARAMS);
-        customView = view;
-        setStatusBarVisibility(false);
-        customViewCallback = callback;
-    }
-
-    /** 隐藏视频全屏 */
-    private void hideCustomView() {
-        if (customView == null) {
-            return;
-        }
-
-        setStatusBarVisibility(true);
-        FrameLayout decor = (FrameLayout) getWindow().getDecorView();
-        decor.removeView(fullscreenContainer);
-        fullscreenContainer = null;
-        customView = null;
-        customViewCallback.onCustomViewHidden();
-        webView.setVisibility(View.VISIBLE);
-    }
-
-    /** 全屏容器界面 */
-    static class FullscreenHolder extends FrameLayout {
-
-        public FullscreenHolder(Context ctx) {
-            super(ctx);
-            setBackgroundColor(ctx.getResources().getColor(android.R.color.black));
-        }
-
-        @Override
-        public boolean onTouchEvent(MotionEvent evt) {
-            return true;
-        }
-    }
-
-    private void setStatusBarVisibility(boolean visible) {
-        int flag = visible ? 0 : WindowManager.LayoutParams.FLAG_FULLSCREEN;
-        getWindow().setFlags(flag, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    }
+//    /** 视频播放全屏 **/
+//    private void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+//        // if a view already exists then immediately terminate the new one
+//        if (customView != null) {
+//            callback.onCustomViewHidden();
+//            return;
+//        }
+//
+//        MainActivity.this.getWindow().getDecorView();
+//
+//        FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+//        fullscreenContainer = new FullscreenHolder(MainActivity.this);
+//        fullscreenContainer.addView(view, COVER_SCREEN_PARAMS);
+//        decor.addView(fullscreenContainer, COVER_SCREEN_PARAMS);
+//        customView = view;
+//        setStatusBarVisibility(false);
+//        customViewCallback = callback;
+//    }
+//
+//    /** 隐藏视频全屏 */
+//    private void hideCustomView() {
+//        if (customView == null) {
+//            return;
+//        }
+//
+//        setStatusBarVisibility(true);
+//        FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+//        decor.removeView(fullscreenContainer);
+//        fullscreenContainer = null;
+//        customView = null;
+//        customViewCallback.onCustomViewHidden();
+//        webView.setVisibility(View.VISIBLE);
+//    }
+//
+//    /** 全屏容器界面 */
+//    static class FullscreenHolder extends FrameLayout {
+//
+//        public FullscreenHolder(Context ctx) {
+//            super(ctx);
+//            setBackgroundColor(ctx.getResources().getColor(android.R.color.black));
+//        }
+//
+//        @Override
+//        public boolean onTouchEvent(MotionEvent evt) {
+//            return true;
+//        }
+//    }
+//
+//    private void setStatusBarVisibility(boolean visible) {
+//        int flag = visible ? 0 : WindowManager.LayoutParams.FLAG_FULLSCREEN;
+//        getWindow().setFlags(flag, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//    }
 }

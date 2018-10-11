@@ -1,23 +1,38 @@
 <template>
   <div class="content">
-    <mt-button type="primary" @click="callNativeFunction">调用安卓的方法</mt-button>
-    <mt-button type="danger">danger</mt-button>
+    <mt-button type="primary" @click="getAndroidEquipmentPower">使用JSInterface获取设备电量</mt-button>
+    <mt-button type="danger" @click="getAndroidEquipmentSN">使用JSBridge获取设备电量</mt-button>
   </div>
 </template>
 <script type="text/ecmascript-6">
+import { eventBus } from '@/eventBus'
 export default {
   name: 'home',
   data() {
     return {}
   },
   created() {
+    eventBus.$on('pay-status', this.payCallback)
     // this.$router.replace({path: '/car-owner-service'})
   },
+  beforeDestroy() {
+    eventBus.$off('pay-status', this.payCallback)
+  },
   methods: {
-    callNativeFunction() {
-      if (window.JSBridge) {
-        window.JSBridge.AndroidToastMessage('js调用了安卓的方法')
+    getAndroidEquipmentPower() {
+      if (window.JSInterface) {
+        let powerNum = window.JSInterface.getAndroidEquipmentPower()
+        window.JSInterface.AndroidToastMessage(`当前设备电量:${powerNum}`)
       }
+    },
+    getAndroidEquipmentSN() {
+      if (window.JSInterface) {
+        let SN = window.JSInterface.getAndroidEquipmentSN()
+        window.JSInterface.AndroidToastMessage(`当前设备号:${SN}`)
+      }
+    },
+    async payCallback(appMessage) {
+      this.$messagebox.alert(JSON.stringify(appMessage))
     }
   }
 }

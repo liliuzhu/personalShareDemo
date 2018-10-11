@@ -2,8 +2,8 @@ import {device} from '@/util'
 import { eventBus } from '@/eventBus'
 
 const ua = navigator.userAgent
-// const CUSTOM_PROTOCOL_SCHEME = 'rrche'
-// const QUEUE_HAS_MESSAGE = '__MESSAGE_MODEL__/'
+const CUSTOM_PROTOCOL_SCHEME = 'rrche'
+const QUEUE_HAS_MESSAGE = '__MESSAGE_MODEL__/'
 
 const DEFAULT_OPTIONS = {
   appPrefix: 'renrenche'
@@ -193,29 +193,29 @@ export default class Bridge {
    * @return {string} iframe.src
    * @memberof Bridge
    */
-  // send(action, data, responseCallback) {
-  //   if (!this.isApp) {
-  //     return console.log('错误：打开方式不再app中')
-  //   }
-  //
-  //   let {uniqueId} = this
-  //   const {
-  //     responseCallbacks,
-  //     messagingIframe
-  //   } = this
-  //   const message = {action, data}
-  //
-  //   if (responseCallback) {
-  //     const callbackId = `cb_${uniqueId++}_${new Date().getTime()}`
-  //     responseCallbacks[callbackId] = responseCallback
-  //     message.callbackId = callbackId
-  //   }
-  //
-  //   const messageQueueString = JSON.stringify(message)
-  //   messagingIframe.src = `${CUSTOM_PROTOCOL_SCHEME}://${QUEUE_HAS_MESSAGE}${encodeURIComponent(messageQueueString)}`
-  //
-  //   return messagingIframe.src
-  // }
+  send(action, data, responseCallback) {
+    if (!this.isApp) {
+      return console.log('错误：打开方式不再app中')
+    }
+
+    let {uniqueId} = this
+    const {
+      responseCallbacks,
+      messagingIframe
+    } = this
+    const message = {action, data}
+
+    if (responseCallback) {
+      const callbackId = `cb_${uniqueId++}_${new Date().getTime()}`
+      responseCallbacks[callbackId] = responseCallback
+      message.callbackId = callbackId
+    }
+
+    const messageQueueString = JSON.stringify(message)
+    messagingIframe.src = `${CUSTOM_PROTOCOL_SCHEME}://${QUEUE_HAS_MESSAGE}${encodeURIComponent(messageQueueString)}`
+
+    return messagingIframe.src
+  }
   /**
    * 与原生交互
    * @param {string} action 动作 encrypt 加密 decrypt解密
