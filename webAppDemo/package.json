@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@rrc/device": "^0.0.1",
+    "@rrc/utils": "^0.0.4",
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
     "mint-ui": "^2.2.13",

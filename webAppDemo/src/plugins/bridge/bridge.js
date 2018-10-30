@@ -1,5 +1,6 @@
-import {device} from '@/util'
-import { eventBus } from '@/eventBus'
+import device from '@rrc/device'
+import Vue from 'vue'
+import {isUndefined} from '@rrc/utils'
 
 const ua = navigator.userAgent
 const CUSTOM_PROTOCOL_SCHEME = 'rrche'
@@ -16,14 +17,17 @@ const isJsonString = (str) => { // 是否是JSON的字符串
     try {
       let obj = JSON.parse(str)
       if (typeof obj === 'object' && obj) {
-        return true
+        return obj
       } else {
         return false
       }
     } catch (e) {
+      Vue.$MessageBox.alert('返回数据格式错误！')
       console.log('error：' + str + '!!!' + e)
       return false
     }
+  } else if (typeof str === 'object' && str) {
+    return str
   }
 }
 
@@ -44,7 +48,14 @@ const requestAppApi = (json) => { // 调取app的接口api
   if (window.RenrencheJSBridge) {
     try {
       let result = window.RenrencheJSBridge.nativeBridge(params)
-      return result
+      let obj = isJsonString(result) || result
+      if (obj) {
+        if (Number(obj.code) !== 0) {
+          Vue.$MessageBox.alert('数据处理错误，请稍后重试！')
+          return null
+        }
+      }
+      return obj
     } catch (error) {
       window.throwError('json parse error in dispatch native bridge')
       return -1
@@ -56,15 +67,9 @@ const requestAppApi = (json) => { // 调取app的接口api
 const handleDecryptData = (json) => { // 发起解密并处理解密后的数据
   let {action} = json
   let response = requestAppApi(json)
-  if (isJsonString(response)) {
-    let res = JSON.parse(response)[action]
-    if (isJsonString(res)) {
-      return JSON.parse(res)
-    } else {
-      return res
-    }
-  }
-  return null
+  let res = response && response[action]
+  let obj = isJsonString(res)
+  return obj || res
 }
 /**
  * 可供监听的事件
@@ -126,7 +131,9 @@ export default class Bridge {
   _createBridgeObj() {
     return {
       send: this.send,
-      jsBridge: this._dispatchMessageFromNative.bind(this)
+      _dispatchMessageFromNative: this._dispatchMessageFromNative.bind(this),
+      jsBridge: this._payStatusCallBack.bind(this),
+      _nativeDispatchToJS: this._nativeDispatchToJS.bind(this)
     }
   }
 
@@ -150,15 +157,30 @@ export default class Bridge {
     readyEvent.bridge = bridgeObj
     document.dispatchEvent(readyEvent)
   }
+  /**
+   * 发起支付后获取支付状态，提供给 APP 调用
+   * @param {*} messageJSON 参数
+   */
+  _payStatusCallBack(messageJSON) {
+    let obj = isJsonString(messageJSON)
+    if (obj) {
+      Vue.prototype.$bus.$emit('pay-status', obj)
+    }
+  }
 
+  _nativeDispatchToJS(messageJSON) {
+    let messageObj = isJsonString(messageJSON)
+    if (messageObj) {
+      Vue.prototype.$bus.$emit(messageObj.action, messageObj.data)
+    } else {
+      Vue.$MessageBox.alert('返回数据格式错误！')
+    }
+  }
   /**
    * 提供给 APP 调用
    * @param {*} messageJSON 参数
    */
   _dispatchMessageFromNative(messageJSON) {
-    if (isJsonString(messageJSON)) {
-      eventBus.$emit('pay-status', JSON.parse(messageJSON))
-    }
     const {responseCallbacks} = this
     setTimeout(() => {
       let message = ''
@@ -173,7 +195,6 @@ export default class Bridge {
           error
         })
       }
-
       if (message.responseId) {
         const responseCallback = responseCallbacks[message.responseId]
         if (!responseCallback) {
@@ -209,8 +230,8 @@ export default class Bridge {
       const callbackId = `cb_${uniqueId++}_${new Date().getTime()}`
       responseCallbacks[callbackId] = responseCallback
       message.callbackId = callbackId
+      // alert('callbackId:' + callbackId)
     }
-
     const messageQueueString = JSON.stringify(message)
     messagingIframe.src = `${CUSTOM_PROTOCOL_SCHEME}://${QUEUE_HAS_MESSAGE}${encodeURIComponent(messageQueueString)}`
 
@@ -225,11 +246,19 @@ export default class Bridge {
   handleRequestAppApi(action, data, service) { // 处理请求APP的api
     if (action === 'encrypt') {
       let response = requestAppApi({action, data: {encrypt: data}}) // 调取app的api
-      if (isJsonString(response)) {
-        const resE = JSON.parse(response)[action]
-        return resE
+      const resE = response && response[action]
+      if (service && resE) { // 如果是加密发起和服务器的请求, 并返回等待解密的Promise
+        return new Promise((resolve, reject) => {
+          service({param: resE}).then(res => {
+            let decryptDate = handleDecryptData({ // 解密返回数据
+              action: 'decrypt',
+              data: {decrypt: res.data}
+            })
+            resolve(decryptDate)
+          }).catch(e => reject(e))
+        })
       }
-      return null
+      return resE
     } else if (action === 'decrypt') {
       return handleDecryptData({ // 解密返回数据
         action: 'decrypt',
@@ -238,51 +267,49 @@ export default class Bridge {
     } else {
       return requestAppApi({action, data})
     }
-
-    // switch (action) {
-    //   case 'encrypt' : // 如果是加密发起和服务器的请求, 并解密返回的数据
-    //     let response = requestAppApi({action, data}) // 调取app的api
-    //     const resE = encodeURI(JSON.parse(response)[action])
-    //     window.alert(JSON.stringify(resE))
-    //     if (service) {
-    //       let rs = await service({paramData: resE}) // eslint-disable-line
-    //       if (!rs || rs.status !== 0) {
-    //         return rs
-    //       }
-    //       return handleDecryptData({ // 解密返回数据
-    //         action: 'decrypt',
-    //         data: {decrypt: rs.data}
-    //       })
-    //     }
-    //     handleDecryptData({ // 解密返回数据
-    //       action: 'payOrder',
-    //       data: {
-    //         order_id: 1,
-    //         creator_id: 1212,
-    //         business_order_id: 122,
-    //         pos_data: {
-    //           amount: 10000,
-    //           service_charge: 10000
-    //         }
-    //       }
-    //     })
-    //     break
-    //   case 'decrypt' : // 如果是发起支付
-    //     return handleDecryptData({ // 解密返回数据
-    //       action: 'decrypt',
-    //       data: {decrypt: data}
-    //     })
-    //   // case 'payOrder' : // 如果是发起支付
-    //   // case 'payOrder' : // 如果是发起支付
-    //   // case 'payOrder' : // 如果是加密发起和服务器的请求, 并解密返回的数据
-    //   default :
-    //     let response = requestAppApi({action, data}) // 调取app的api
-    //     let res = JSON.parse(response)[action]
-    //     if (isJsonString(res)) {
-    //       return JSON.parse(res)
-    //     } else {
-    //       return res
-    //     }
-    // }
+  }
+  /**
+   * 采用异步回调的方式与原生交互
+   * @param {string} action 动作 encrypt 加密 decrypt解密
+   * @param {object} data 数据
+   * @param {*} service 后台接口
+   */
+  asyncRequestAppApi(action, data, callBack, service) { // 处理请求APP的api
+    let paramsData = data
+    if (action === 'encryptPay' || action === 'decryptPay') {
+      paramsData = {}
+      paramsData[action] = data
+    }
+    this.send(action, paramsData, async (e, message) => {
+      // alert(JSON.stringify(message))
+      let appMessage = isJsonString(message) || {}
+      if (e) {
+        e.message && Vue.$MessageBox.alert(e.message)
+      } else if (isUndefined(appMessage.code) || Number(appMessage.code) !== 0) {
+        Vue.$MessageBox.alert('数据处理错误，请稍后再试！')
+      } else {
+        if (action === 'encryptPay') {
+          let encryptData = appMessage[action]
+          if (encryptData && service) {
+            let result = await service({param: encryptData})
+            if (result && result.data) {
+              let obj = { // 解密返回数据
+                action: 'decryptPay',
+                data: result.data
+              }
+              this.asyncRequestAppApi(obj.action, obj.data, callBack)
+            }
+          } else {
+            callBack && callBack(encryptData)
+          }
+        } else if (action === 'decryptPay') {
+          // Vue.$MessageBox.alert('decryptPay')
+          let actionData = appMessage[action]
+          callBack && callBack(actionData)
+        } else {
+          callBack && callBack(appMessage)
+        }
+      }
+    })
   }
 }

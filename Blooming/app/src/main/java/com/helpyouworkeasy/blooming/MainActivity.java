@@ -11,6 +11,8 @@ import android.telephony.TelephonyManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -121,7 +123,7 @@ public class MainActivity extends Activity{
 
     protected void onDestroy(){
         super.onDestroy();
-//        toastMessage("onDestroy");
+        toastMessage("onDestroy：关闭APP");
 
         /***
          * 防止WebView加载内存泄漏
@@ -236,6 +238,7 @@ public class MainActivity extends Activity{
 
         WebSettings settings = webView.getSettings();
         settings.setRenderPriority(RenderPriority.HIGH);
+        settings.setUserAgentString(settings.getUserAgentString() + " renrenche/5.4.0"); //添加UA,  “app/XXX”：是与h5商量好的标识，h5确认UA为app/XXX就认为该请求的终端为App
 
         // 启用支持javascript
         settings.setJavaScriptEnabled(true);// 让webview对象支持解析javascript语句
@@ -297,6 +300,9 @@ public class MainActivity extends Activity{
                 // webView加载web资源
                 if(url == null) return false;
                 try {
+                    if(new JSBridgeManagerImpl().handleUrlLoading(view, url)){
+                        return true;
+                    }
                     if (url.startsWith("http:") || url.startsWith("https:")) {
                         view.loadUrl(url);
                         return true;
@@ -388,7 +394,7 @@ public class MainActivity extends Activity{
 //        webView.addJavascriptInterface(this, "android");
         webView.addJavascriptInterface(new JSInterface(), "JSInterface");
         // webView加载web资源
-        webView.loadUrl("http://172.18.2.247:8081");
+        webView.loadUrl("http://172.18.2.2:8081");
 //		startReadUrl("file:///android_asset/meetingAndroid/login.html");
     }
 
