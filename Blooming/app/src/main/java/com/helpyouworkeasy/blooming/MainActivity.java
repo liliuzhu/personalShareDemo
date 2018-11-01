@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -62,6 +63,9 @@ import android.os.Build;
 import android.os.Handler;
 import android.view.ViewGroup;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MainActivity extends Activity{
     private WebView webView;
 
@@ -76,12 +80,14 @@ public class MainActivity extends Activity{
     private View customView;
     private FrameLayout fullscreenContainer;
     private WebChromeClient.CustomViewCallback customViewCallback;
-
     private String newPower;//最新电量
+    private final String reSetHTTP = "http://172.18.2.2:8081";
+    protected static  MainActivity mactivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mactivity = this;
 //
 //        TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         // 窗口进度条
@@ -138,8 +144,7 @@ public class MainActivity extends Activity{
     }
     private void unregister() {//注销广播
         unregisterReceiver(batteryChangedReceiver);
-    }
-    // 接受广播
+    }// 接受广播
     private BroadcastReceiver batteryChangedReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
@@ -175,11 +180,44 @@ public class MainActivity extends Activity{
     }
     public void button1Click(View view) { // 按钮点击事件
         toastMessage("native button1被点击");
-//        webView.loadUrl("javascript:WebViewJavascriptBridge.jsBridge()"); //调用html中的js
+        String params = "{'action': 'button1', 'data': {'message': '我是nativeButton-1返回的消息'}}";
+        String jsonObject = "";
+        try{
+            jsonObject = (new JSONObject(params)).toString();
+            webView.loadUrl("javascript:window.WebViewJavascriptBridge._nativeDispatchToJS(" + jsonObject + ")"); //调用html中的js
+        } catch (JSONException e){
+            toastMessage(e.toString());
+            e.printStackTrace();
+        }
+    }
+    public void reset(View view){ // 复位
+        webView.loadUrl(reSetHTTP);
     }
     public void button2Click(View view) { // 按钮点击事件
         toastMessage("native button2被点击");
-//        webView.loadUrl("javascript:WebViewJavascriptBridge.jsBridge()"); //调用html中的js
+        String params = "{'action': 'button2', 'data': {'message': '我是nativeButton-2返回的消息'}}";
+        String jsonObject = "";
+        try{
+            jsonObject = (new JSONObject(params)).toString();
+            // Android版本变量
+            final int version = Build.VERSION.SDK_INT;
+            // 因为该方法在 Android 4.4 版本才可使用，所以使用时需进行版本判断
+            if (version < 19) {
+                webView.loadUrl("javascript:window.WebViewJavascriptBridge._nativeDispatchToJS(" + jsonObject + ")");
+            } else {
+                webView.evaluateJavascript("javascript:window.WebViewJavascriptBridge._nativeDispatchToJS(" + jsonObject + ")", new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String value) {
+                                //此处为 js 返回的结果
+                                toastMessage("js返回的内容：" + value);
+                            }
+                        }
+                ); //调用html中的js
+            }
+        } catch (JSONException e){
+            toastMessage(e.toString());
+            e.printStackTrace();
+        }
     }
 //    @JavascriptInterface  //js调用比写声明/sdk17版本以上加上注解
     public void toastMessage(String message) { //安卓原生弹框
@@ -394,7 +432,7 @@ public class MainActivity extends Activity{
 //        webView.addJavascriptInterface(this, "android");
         webView.addJavascriptInterface(new JSInterface(), "JSInterface");
         // webView加载web资源
-        webView.loadUrl("http://172.18.2.2:8081");
+        webView.loadUrl(reSetHTTP);
 //		startReadUrl("file:///android_asset/meetingAndroid/login.html");
     }
 

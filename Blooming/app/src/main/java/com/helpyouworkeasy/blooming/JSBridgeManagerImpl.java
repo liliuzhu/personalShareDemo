@@ -26,7 +26,7 @@ public class JSBridgeManagerImpl {
         Log.e(TAG, "handlerJSCallData:" + url);
         // 截获参数
         String params = URLDecoder.decode(url.replace(RRC_OVERRIDE_SCHEMA,""));
-//        customUtil.showToast(Context, '');
+        customUtil.showToast(MainActivity.mactivity, params);
         if (!TextUtils.isEmpty(params)){
             try{
                 JSONObject jsonObject = new JSONObject(params);

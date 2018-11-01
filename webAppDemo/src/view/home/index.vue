@@ -1,9 +1,11 @@
 <template>
   <div class="content">
-    <mt-button type="primary" @click="getAndroidEquipmentPower">使用JSInterface获取设备电量</mt-button>
-    <mt-button type="danger" @click="getAndroidEquipmentSN">使用JSBridge获取设备电量</mt-button>
-    <mt-button type="danger" @click="closeApp">关闭App</mt-button>
-    <mt-button type="danger" @click="AppScheme">AppScheme</mt-button>
+    <ul>
+      <li><mt-button type="primary" @click="getAndroidEquipmentPower">使用JSInterface获取设备电量</mt-button></li>
+      <li><mt-button type="danger" @click="getAndroidEquipmentSN">使用JSBridge获取设备电量</mt-button></li>
+      <li><mt-button type="primary" @click="AppScheme">AppScheme-JSBridge方式</mt-button></li>
+      <li><mt-button type="danger" @click="closeApp">关闭App</mt-button></li>
+    </ul>
   </div>
 </template>
 <script type="text/ecmascript-6">
@@ -14,11 +16,13 @@ export default {
     return {}
   },
   created() {
-    // eventBus.$on('pay-status', this.payCallback)
+    this.$bus.$on('button1', this.payCallback1)
+    this.$bus.$on('button2', this.callback2)
     // this.$router.replace({path: '/car-owner-service'})
   },
   beforeDestroy() {
-    // eventBus.$off('pay-status', this.payCallback)
+    this.$bus.$off('button1', this.payCallback1)
+    this.$bus.$off('button2', this.callback2)
   },
   methods: {
     getAndroidEquipmentPower() {
@@ -41,11 +45,14 @@ export default {
     AppScheme() {
       let params = {name: '张三', age: 24}
       this.$rrcBridge.asyncRequestAppApi('encryptPay', params, result => {
-        alert(JSON.stringify(result))
+        // alert(JSON.stringify(result))
       })
     },
-    async payCallback(appMessage) {
-      this.$messagebox.alert(JSON.stringify(appMessage))
+    payCallback1(appMessage) {
+      alert(appMessage.message)
+    },
+    callback2(appMessage) {
+      alert(appMessage.message)
     }
   }
 }
@@ -54,5 +61,8 @@ export default {
   .content{
     padding: 1rem;
     text-align: center;
+    li{
+      padding: 0.3rem 0;
+    }
   }
 </style>
