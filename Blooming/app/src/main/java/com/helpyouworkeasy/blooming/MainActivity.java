@@ -81,7 +81,7 @@ public class MainActivity extends Activity{
     private FrameLayout fullscreenContainer;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private String newPower;//最新电量
-    private final String reSetHTTP = "http://172.18.2.2:8081";
+    private final String reSetHTTP = "http://172.18.2.37:8081";
     protected static  MainActivity mactivity;
 
     @Override

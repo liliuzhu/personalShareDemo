@@ -5,6 +5,7 @@
       <li><mt-button type="danger" @click="getAndroidEquipmentSN">使用JSBridge获取设备电量</mt-button></li>
       <li><mt-button type="primary" @click="AppScheme">AppScheme-JSBridge方式</mt-button></li>
       <li><mt-button type="danger" @click="closeApp">关闭App</mt-button></li>
+      <li><mt-button type="danger" @click="tiaozhuan">跳转</mt-button></li>
     </ul>
   </div>
 </template>
@@ -16,6 +17,7 @@ export default {
     return {}
   },
   created() {
+    // alert(window.navigator.userAgent)
     this.$bus.$on('button1', this.payCallback1)
     this.$bus.$on('button2', this.callback2)
     // this.$router.replace({path: '/car-owner-service'})
@@ -29,6 +31,7 @@ export default {
       if (window.JSInterface) {
         let powerNum = window.JSInterface.getAndroidEquipmentPower()
         window.JSInterface.AndroidToastMessage(`当前设备电量:${powerNum}`)
+        console.log(powerNum)
       }
     },
     getAndroidEquipmentSN() {
@@ -45,7 +48,7 @@ export default {
     AppScheme() {
       let params = {name: '张三', age: 24}
       this.$rrcBridge.asyncRequestAppApi('encryptPay', params, result => {
-        // alert(JSON.stringify(result))
+        alert(JSON.stringify(result))
       })
     },
     payCallback1(appMessage) {
@@ -53,6 +56,9 @@ export default {
     },
     callback2(appMessage) {
       alert(appMessage.message)
+    },
+    tiaozhuan() {
+      window.location.href = 'http://www.renrenche.com'
     }
   }
 }

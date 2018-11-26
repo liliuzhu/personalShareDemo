@@ -175,8 +175,8 @@ export default class Bridge {
     } else {
       Vue.$MessageBox.alert('返回数据格式错误！')
     }
-    // return messageObj.action + ': 你已经成功的引起了我的注意。'
-    return {name: messageObj.action + ': 你已经成功的引起了我的注意。'}
+    return messageObj.action + ': 你已经成功的引起了我的注意。'
+    // return {name: messageObj.action + ': 你已经成功的引起了我的注意。'}
   }
   /**
    * 提供给 APP 调用
