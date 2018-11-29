@@ -1,0 +1,18 @@
+/* renrenche Hermes Variables */
+
+/* 配色来自于 @see http://uiguide.shanyishanmei.com/ */
+
+/* Colors
+-------------------------- */
+$font-family-base: PingFangSC-Medium, PingFangSC-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif !default;
+// 背景颜色
+$bg-color: #f7f7f7;
+// 主题色
+$primary: #ff6b23 !default;
+// mask
+$color-mask-bg: rgba(37, 38, 45, 0.4) !default;
+// 默认的资源存放路径
+$icon-img-url: '../assets/img';
+/* nprogress 进度条 背景颜色
+-------------------------- */
+$nprogress: $primary;

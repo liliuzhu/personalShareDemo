@@ -1,14 +1,14 @@
 import io from 'socket.io-client'
 
 let wsUrl = 'http://172.18.2.37:3000'
-const CLIENT = {
+const CLIENT = { // eslint-disable-line
   socket: null,
   init(username) {
     // 连接websocket后端服务器
     this.socket = io.connect(wsUrl, {'force new connection': true})
-    this.socket.on('open', _ => {
-      console.log('open')
-    })
+    // this.socket.on('open', _ => {
+    //   console.log('open')
+    // })
     this.socket.on('connect', _ => {
       console.log('connect')
       this.socket.emit('login', username)
@@ -38,6 +38,27 @@ const CLIENT = {
     this.socket.emit('postMsg', msg, color)
   }
 }
+
+class Client {
+  constructor(url, bus) {
+    this._wsUrl = url
+    this._bus = bus
+    this._socket = null
+  }
+  init(events) {
+    this._socket = io.connect(this._wsUrl, {'force new connection': true})
+    for (let i = 0, len = events.length; i < len; i++) {
+      this._socket.on(events[i], (...arg) => {
+        console.log(events[i])
+        this._bus.$emit(events[i], arg)
+      })
+    }
+  }
+  postMsg(action, msg, color) {
+    this._socket.emit(action, msg, color)
+  }
+}
+
 export default function socketClient(Vue) {
-  Vue.prototype.$socketClient = CLIENT
+  Vue.prototype.$socketClient = new Client(wsUrl, Vue.prototype.$bus)
 }
