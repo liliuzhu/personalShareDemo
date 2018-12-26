@@ -1,6 +1,6 @@
 import io from 'socket.io-client'
 
-let wsUrl = 'http://172.18.2.37:3000'
+let wsUrl = 'http://172.18.1.166:3000'
 const CLIENT = { // eslint-disable-line
   socket: null,
   init(username) {
@@ -49,13 +49,16 @@ class Client {
     this._socket = io.connect(this._wsUrl, {'force new connection': true})
     for (let i = 0, len = events.length; i < len; i++) {
       this._socket.on(events[i], (...arg) => {
-        console.log(events[i])
-        this._bus.$emit(events[i], arg)
+        console.log(1, events[i])
+        this._bus.$emit(events[i], ...arg)
       })
     }
   }
   postMsg(action, msg, color) {
     this._socket.emit(action, msg, color)
+  }
+  sendMsgToServer(...arg) {
+    this._socket.emit(...arg)
   }
 }
 
