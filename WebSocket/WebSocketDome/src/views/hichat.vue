@@ -2,24 +2,30 @@
   <rc-page title="聊天室">
     <div class="wrapper">
       <div class="banner">
-        <h1>供应链前端周会！</h1>
-        <span>{{userCount}}</span>
+        <h1 class="banner_title">供应链前端周会！<span v-show="logged"> -- {{nickName}}</span></h1>
+        <span class="online_count">{{userCount}}</span>
       </div>
-      <div class="historyMsg">
-        <p v-for="(item,index) in historyList" :key="index" :style="{color: item.color}">{{item.user}}<span class="timespan">({{item.date}})</span>{{item.msg}}</p>
+      <div class="historyMsg" ref="historyMsgBox">
+        <div v-for="(item,index) in historyList" class="msg_item" :class="{my_self: item.user === nickName}" :key="index" :style="{color: item.color}">
+          <p class="timespan">({{item.date}})</p>
+          <span class="nick_name" v-if="item.user !== nickName">【{{item.user}}】：</span>
+          <p class="msg_content" v-if="item.type==='msg'" v-html="_analysisEmoji(item.msg)"></p>
+          <p class="msg_content" v-else-if="item.type==='img'"><a :href="item.msg" target="_blank"><img :src="item.msg"/></a></p>
+          <span class="nick_name" v-if="item.user === nickName">：【{{item.user}}】</span>
+        </div>
       </div>
-      <div class="controls" >
+      <div class="controls">
         <div class="items">
           <input class="colorStyle" type="color" v-model="textColor" title="文本颜色"/>
           <button title="表情" @click.stop="showEmojiWrapper=!showEmojiWrapper">表情</button>
           <label for="sendImage" class="imageLable">
             <button>图片</button>
-            <input id="sendImage" type="file" value="图片"/>
+            <input id="sendImage" @change="changeImage($event)" type="file" value="图片"/>
           </label>
           <button title="清空屏幕">清空</button>
           <div class="emojiWrapper" v-show="showEmojiWrapper">
             <div class="emoji_box" ref="emojiBox">
-              <img class="emoji" @click="selectEmoji(index)" v-for="index in 75" :key="index" :src="'/static/emoji/'+index+'.gif'" :alt="index" :title="index"/>
+              <img class="emoji" @click="selectEmoji(index)" v-for="index in totalEmojiNum" :key="index" :src="'/static/emoji/'+index+'.gif'" :alt="index" :title="index"/>
             </div>
           </div>
         </div>
@@ -46,14 +52,15 @@ export default {
     return {
       connected: false,
       logged: false,
-      events: ['connect', 'reconnect', 'disconnect', 'newMsg', 'nickExisted', 'loginSuccess', 'system'],
+      events: ['connect', 'reconnect', 'disconnect', 'newMsg', 'newImg', 'nickExisted', 'loginSuccess', 'system'],
       tipInfo: '',
       nickName: '',
       userCount: '',
       historyList: [],
       showEmojiWrapper: false,
       messageInput: '',
-      textColor: '#000000'
+      textColor: '#000000',
+      totalEmojiNum: 75
     }
   },
   created() {
@@ -95,6 +102,7 @@ export default {
     },
     sendmsg() {
       this.sendMsgToServer('postMsg', this.messageInput, this.textColor)
+      this._displayNewMsg(this.nickName, this.messageInput, this.textColor)
       this.messageInput = ''
     },
     connect() { // 连接成功
@@ -120,29 +128,64 @@ export default {
     system(nickName, userCount, type) { // 系统信息
       console.log('系统信息')
       console.log(nickName, userCount, type)
+      var msg = nickName + (type === 'login' ? ' - 加入' : ' - 离开')
+      this._displayNewMsg('system ', msg, 'red') // 指定系统消息显示为红色
       this.userCount = '在线人数：' + userCount
     },
     newMsg(user, msg, color) { // 接收新信息
       console.log(user, msg, color)
       this._displayNewMsg(user, msg, color)
     },
-    selectEmoji(emojiIndex) {
+    newImg(user, imgData) {
+      console.log('newImg', user)
+      this._displayNewMsg(user, imgData, null, 'img')
+    },
+    changeImage($event) {
+      let el = $event.target
+      console.log(el)
+      if ($event.target.files.length > 0) { // 获取文件并用FileReader进行读取
+        let file = el.files[0]
+        let reader = new FileReader()
+        if (!reader) {
+          this._displayNewMsg('system', '警告：你的浏览器不支持读取文件！', 'red')
+          // el.value = ''
+          return
+        }
+        reader.onload = (event) => { // 读取成功，显示到页面并发送到服务器
+          // el.value = ''
+          this.sendMsgToServer('img', event.target.result)
+          this._displayNewMsg(this.nickName, event.target.result, null, 'img')
+        }
+        reader.readAsDataURL(file)
+      }
+    },
+    selectEmoji(emojiIndex) { // 选择表情符号
       this.$refs.messageInput.focus()
       this.messageInput = this.messageInput + '[emoji:' + emojiIndex + ']'
     },
-    _displayNewMsg: function(user, msg, color) { // 展示信息
-      const histort = {user, msg, color}
+    _displayNewMsg: function(user, msg, color, type = 'msg') { // 展示信息
+      const histort = {user, msg, color, type}
       histort.date = new Date().toTimeString().substr(0, 8)
       this.historyList.push(histort)
-      // var container = document.getElementById('historyMsg'),
-      //   msgToDisplay = document.createElement('p'),
-      //   date = new Date().toTimeString().substr(0, 8),
-      //   //将消息中的表情转换为图片
-      //   msg = this._showEmoji(msg);
-      // msgToDisplay.style.color = color || '#000';
-      // msgToDisplay.innerHTML = user + '<span class="timespan">(' + date + '): </span>' + msg;
-      // container.appendChild(msgToDisplay);
-      // container.scrollTop = container.scrollHeight;
+      this.$nextTick(_ => {
+        let historyMsgBox = this.$refs.historyMsgBox
+        historyMsgBox.scrollTop = historyMsgBox.scrollHeight
+      })
+    },
+    _analysisEmoji: function(msg) { // 解析表情
+      let match
+      let result = msg
+      let reg = /\[emoji:\d+\]/g
+      let emojiIndex
+      while (match = reg.exec(msg)) { // eslint-disable-line
+        emojiIndex = match[0].slice(7, -1)
+        if (emojiIndex > this.totalEmojiNum) {
+          result = result.replace(match[0], '[X]')
+        } else {
+          result = result.replace(match[0], '<img class="emoji" src="/static/emoji/' + emojiIndex + '.gif" />')
+        }
+      }
+      return result
     }
   }
 }
@@ -158,7 +201,7 @@ export default {
   }
   .wrapper {
     height: 100%;
-    padding: 5px;
+    padding: 0.15rem;
     margin: 0 auto;
     background-color: #ddd;
     @include flex_box();
@@ -174,15 +217,20 @@ export default {
     text-align: center;
     color: #fff;
     display: block;
-    padding-top: 200px;
+    padding-top: 50%;
   }
   .banner {
-    height: 80px;
-    width: 100%;
-  }
-  .banner p {
-    float: left;
-    display: inline-block;
+    height: 2.5rem;
+    .banner_title{
+      font-size: 0.5rem;
+      line-height: 2em;
+      color: #f00;
+    }
+    .online_count{
+      font-size: 0.4rem;
+      line-height: 2em;
+      color: #00f;
+    }
   }
   .historyMsg {
     @include flex_num(1);
@@ -192,9 +240,30 @@ export default {
     img {
       max-width: 50%;
     }
+    .emoji{
+      max-width: 100%;
+    }
+    .msg_item{
+      padding: 0.5em 0.2em;
+      text-align: left;
+      line-height: 1.5em;
+      .msg_content{
+        max-width: 50%;
+        display: inline-block;
+        vertical-align: top;
+      }
+      .nick_name{
+        font-weight: bolder;
+      }
+      &.my_self{
+        text-align: right;
+      }
+    }
   }
   .timespan {
     color: #ddd;
+    font-size: 0.5em;
+    text-align: center;
   }
   .items {
     height: 30px;
