@@ -38,14 +38,15 @@
     <div class="loginWrapper" v-if="!connected || !logged">
       <p v-show="tipInfo">{{tipInfo}}</p>
       <div class="nickWrapper" v-if="connected && !logged">
-        <input type="text" placeHolder="请输入账号" v-model="nickName" @keyup.enter="login" class="nicknameInput" ref="nicknameInput"/>
-        <input type="button" value="登录"  @click="login"/>
+        <input type="text" placeHolder="请输入账号" v-model="nickName" @keyup.enter="login" class="nicknameInput" ref="nicknameInput"/><input type="button" value="登录"  @click="login"/>
       </div>
     </div>
+    <chat-audio ref="chatAudio"></chat-audio>
   </rc-page>
 </template>
 
 <script>
+import chatAudio from './chatAudio'
 export default {
   name: 'HelloWorld',
   data () {
@@ -167,6 +168,7 @@ export default {
       const histort = {user, msg, color, type}
       histort.date = new Date().toTimeString().substr(0, 8)
       this.historyList.push(histort)
+      this.$refs.chatAudio.play()
       this.$nextTick(_ => {
         let historyMsgBox = this.$refs.historyMsgBox
         historyMsgBox.scrollTop = historyMsgBox.scrollHeight
@@ -187,7 +189,8 @@ export default {
       }
       return result
     }
-  }
+  },
+  components: {chatAudio}
 }
 </script>
 
@@ -218,9 +221,13 @@ export default {
     color: #fff;
     display: block;
     padding-top: 50%;
+    .nickWrapper *{
+      height: 2em;
+      padding: 0 .2rem;
+    }
   }
   .banner {
-    height: 2.5rem;
+    /*height: 2.5rem;*/
     .banner_title{
       font-size: 0.5rem;
       line-height: 2em;
@@ -262,7 +269,7 @@ export default {
   }
   .timespan {
     color: #ddd;
-    font-size: 0.5em;
+    font-size: 0.8em;
     text-align: center;
   }
   .items {

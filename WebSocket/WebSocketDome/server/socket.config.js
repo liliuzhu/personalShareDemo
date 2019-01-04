@@ -20,7 +20,7 @@ function socketConfig(io){
       //将断开连接的用户从users中删除
       users.splice(socket.userIndex, 1);
       //通知除自己以外的所有人
-      socket.broadcast.emit('system', socket.nickname, users.length, 'logout');
+      socket.nickname && socket.broadcast.emit('system', socket.nickname, users.length, 'logout');
     });
     //接收新消息
     socket.on('postMsg', function(msg,color) {
