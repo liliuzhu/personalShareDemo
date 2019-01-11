@@ -1,0 +1,23 @@
+/* 覆盖默认 mint-ui样式*/
+.mint-msgbox-btn{
+  font-size: inherit;
+  &.mint-msgbox-confirm{
+    color: $primary;
+  }
+  &.mint-msgbox-cancel{
+    color: rgba(0,0,0,0.36);
+  }
+}
+.mint-cell{
+  &:active,&:visited,&:focus,&:hover{
+    text-decoration: none;
+  }
+}
+.mint-cell-allow-right::after{
+  $length: 0.25rem;
+  width: $length;
+  height: $length;
+  border: solid 0.03rem $primary;
+  border-bottom: none;
+  border-left: none;
+}
