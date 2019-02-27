@@ -1,6 +1,6 @@
 import io from 'socket.io-client'
 
-let wsUrl = 'http://172.18.2.17:3000'
+let wsUrl = `${window.location.protocol}://${window.location.hostname}3000` // http://10.3.17.131
 const CLIENT = { // eslint-disable-line
   socket: null,
   init(username) {
