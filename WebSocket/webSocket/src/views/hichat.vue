@@ -30,8 +30,8 @@
           </div>
         </div>
         <div class="text_edit_control">
-          <textarea class="messageInput" ref="messageInput" v-model="messageInput" placeholder="请输入" @keyup.enter="sendmsg"></textarea>
-          <button class="sendBtn" @click="sendmsg">发送</button>
+          <textarea class="messageInput" ref="messageInput" v-model.trim="messageInput" placeholder="请输入" @keyup.enter="sendMsg"></textarea>
+          <button class="sendBtn" @click="sendMsg">发送</button>
         </div>
       </div>
     </div>
@@ -53,7 +53,7 @@ export default {
     return {
       connected: false,
       logged: false,
-      events: ['connect', 'reconnect', 'disconnect', 'newMsg', 'newImg', 'nickExisted', 'loginSuccess', 'system'],
+      events: ['connect', 'reconnect', 'disconnect', 'postMsg', 'newImg', 'nickExisted', 'loginSuccess', 'system'],
       tipInfo: '',
       nickName: '',
       userCount: '',
@@ -61,17 +61,13 @@ export default {
       showEmojiWrapper: false,
       messageInput: '',
       textColor: '#000000',
-      totalEmojiNum: 75
+      totalEmojiNum: 0
     }
   },
   created() {
+    this.init()
     let events = this.events
     for (let i = 0, len = events.length; i < len; i++) {
-      // this.$bus.$on(events[i], (arg) => {
-      //   console.log(2, events[i])
-      //   arg.unshift(events[i])
-      //   this.message(...arg)
-      // })
       this.$bus.$on(events[i], this[events[i]])
     }
     document.body.addEventListener('click', e => {
@@ -90,21 +86,31 @@ export default {
     this.$socketClient.init(this.events)
   },
   methods: {
+    init() {
+      let routerChildrenContext = require.context('*/static/emoji/', true, /.*\.gif/)
+      this.totalEmojiNum = routerChildrenContext.keys().length
+    },
     login() { // 登录
       if (this.nickName) { // 检查昵称输入框是否为空
-        this.sendMsgToServer('login', this.nickName) // 不为空，则发起一个login事件并将输入的昵称发送到服务器
+        const params = {action: 'login', data: {nickName: this.nickName}}
+        this.sendMsgToServer(params) // 不为空，则发起一个login事件并将输入的昵称发送到服务器
       } else {
         this.tipInfo = '请填写昵称'
         this.$refs.nicknameInput.focus() // 否则输入框获得焦点
       }
     },
-    sendMsgToServer(...arg) {
-      this.$socketClient.sendMsgToServer(...arg)
+    sendMsgToServer(arg) {
+      this.$socketClient.sendMsgToServer(arg)
     },
-    sendmsg() {
-      this.sendMsgToServer('postMsg', this.messageInput, this.textColor)
-      this._displayNewMsg(this.nickName, this.messageInput, this.textColor)
-      this.messageInput = ''
+    sendMsg() {
+      if (this.messageInput) {
+        const params = {action: 'postMsg', data: {msg: this.messageInput, color: this.textColor}}
+        this.sendMsgToServer(params)
+        this._displayNewMsg(this.nickName, this.messageInput, this.textColor)
+        this.messageInput = ''
+      } else {
+        alert('不可发送空信息')
+      }
     },
     connect() { // 连接成功
       this.connected = true
@@ -126,18 +132,18 @@ export default {
     reconnect() { // 重连接
       console.log('重连接')
     },
-    system(nickName, userCount, type) { // 系统信息
+    system({nickName, userCount, type}) { // 系统信息
       console.log('系统信息')
       console.log(nickName, userCount, type)
       var msg = nickName + (type === 'login' ? ' - 加入' : ' - 离开')
       this._displayNewMsg('system ', msg, 'red') // 指定系统消息显示为红色
       this.userCount = '在线人数：' + userCount
     },
-    newMsg(user, msg, color) { // 接收新信息
+    postMsg({user, msg, color}) { // 接收新信息
       console.log(user, msg, color)
       this._displayNewMsg(user, msg, color)
     },
-    newImg(user, imgData) {
+    newImg({user, imgData}) {
       console.log('newImg', user)
       this._displayNewMsg(user, imgData, null, 'img')
     },
@@ -153,8 +159,8 @@ export default {
           return
         }
         reader.onload = (event) => { // 读取成功，显示到页面并发送到服务器
-          // el.value = ''
-          this.sendMsgToServer('img', event.target.result)
+          const params = {action: 'newImg', data: {imgData: event.target.result}}
+          this.sendMsgToServer(params)
           this._displayNewMsg(this.nickName, event.target.result, null, 'img')
         }
         reader.readAsDataURL(file)

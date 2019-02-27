@@ -1,41 +1,4 @@
-// import io from 'socket.io-client'
-
-let wsUrl = 'ws://172.18.4.143:3000'
-// const CLIENT = { // eslint-disable-line
-//   socket: null,
-//   init(username) {
-//     // 连接websocket后端服务器
-//     this.socket = io.connect(wsUrl, {'force new connection': true})
-//     // this.socket.on('open', _ => {
-//     //   console.log('open')
-//     // })
-//     this.socket.on('connect', _ => {
-//       console.log('connect')
-//       this.socket.emit('login', username)
-//     })
-//     this.socket.on('newMsg', (user, msg, color) => {
-//       this._displayNewMsg(user, msg, color)
-//     })
-//     // 在前端接收到这个事件后我们显示一条信息通知用户。
-//     this.socket.on('nickExisted', _ => {
-//       // document.getElementById('info').textContent = '称被占用' // 显示昵称被占用的提示
-//     })
-//     // 通知前端登陆成功，前端接收到这个成功消息后将灰色遮罩层移除显示聊天界面。
-//     this.socket.on('loginSuccess', _ => {
-//       console.log('loginSuccess')
-//     })
-//     this.socket.on('system', (nickName, userCount, type) => {
-//       var msg = nickName + (type === 'login' ? ' 加入' : '离开')
-//       // 指定系统消息显示为红色
-//       this._displayNewMsg('system ', msg, 'red')
-//       // document.getElementById('status').textContent = userCount + (userCount > 1 ? ' users' : ' user') + ' online';
-//     })
-//   },
-//   postMsg(msg, color) {
-//     this.socket.emit('postMsg', msg, color)
-//   }
-// }
-
+let wsUrl = `ws://${window.location.hostname || '127.0.0.1'}:3000`
 class Client {
   constructor(url, bus) {
     this._wsUrl = url
@@ -44,16 +7,20 @@ class Client {
   }
   init(events) {
     if ('WebSocket' in window) {
-      this._socket = new WebSocket(wsUrl)
-      // for (let i = 0, len = events.length; i < len; i++) {
-      //   this._socket.addEventListener(events[i], (...arg) => {
-      //     console.log(1, events[i])
-      //     this._bus.$emit(events[i], ...arg)
-      //   })
-      // }
-      this._socket.onopen = () => {
-        console.log(1234)
-        this.sendMsgToServer({action: '123', msg: '456'})
+      this._socket = new WebSocket(this._wsUrl)
+      this._socket.onopen = (e) => {
+        this._bus.$emit('connect')
+      }
+      this._socket.onclose = (e) => {
+        console.log('连接中断', e)
+      }
+      this._socket.onerror = (e) => {
+        console.log('连接错误', e)
+      }
+      this._socket.onmessage = (msg) => {
+        const message = JSON.parse(msg.data)
+        console.log(message.action)
+        this._bus.$emit(message.action, message.data)
       }
     } else {
       alert('您的浏览器不支持 WebSocket!')
