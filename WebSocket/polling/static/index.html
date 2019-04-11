@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/axios@0.18.0/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@2.6.10/dist/vue.min.js"></script>
+    <title>polling</title>
+</head>
+<body>
+<div id="app">
+    <button @click="polling">http 轮询</button>
+    <button @click="stopPolling">停止轮询</button>
+    <p>{{time}}</p>
+</div>
+<script>
+    window.onload=function(){
+        let vm=new Vue({
+            el:'#app',
+            data:{
+                time: '',
+                timer: null
+            },
+            mounted() {
+
+            },
+            methods: {
+                polling() {
+                    this.stopPolling()
+                    this.timer = setInterval(this.getTime, 1000)
+                },
+                stopPolling() {
+                    clearInterval(this.timer)
+                    this.timer = null
+                },
+                getTime(){
+                    window.axios.get('/polling').then(res => {
+                        this.time = res.data
+                    })
+                }
+            }
+        });
+    };
+</script>
+</body>
+</html>
