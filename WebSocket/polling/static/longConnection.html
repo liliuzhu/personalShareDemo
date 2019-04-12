@@ -18,27 +18,36 @@
             el:'#app',
             data:{
                 time: '',
-                timer: null,
-                source: null
+                eventSource: null
             },
             methods: {
                 stopLongConnection() {
-                    window.axios.get('/stopLongConnection',).then(res => {
-                        this.time = res.data
-                    }).catch(err => {
-                        console.log(err)
-                    })
+                   this.close()
                 },
                 longConnection() {
                     this.getTime()
                 },
                 getTime(){
                     // 实例化 EventSource 对象，并指定一个 URL 地址
-                    const eventSource = new EventSource('/longConnection'); // 使用 addEventListener() 方法监听事件
-                    eventSource.addEventListener('message', (res) => {
-                        // 消息数据
-                        this.time = res.data
-                    }, false);
+                    this.eventSource = new EventSource('/longConnection'); // 使用 addEventListener() 方法监听事件
+                    console.log("当前状态0", this.eventSource.readyState);
+                    this.eventSource.onopen = this.onopen
+                    this.eventSource.onmessage = this.onmessage
+                    this.eventSource.onerror = this.onerror
+                },
+                onopen(){
+                    console.log("链接成功.");
+                    console.log("当前状态1", this.eventSource.readyState);
+                },
+                onmessage(res){
+                    this.time = res.data
+                },
+                onerror(err){
+                    console.log(err)
+                },
+                close(){
+                    this.eventSource && this.eventSource.close()
+                    console.log("当前状态2", this.eventSource.readyState);
                 }
             }
         });

@@ -31,7 +31,7 @@
                     }
                 },
                 getTime(){
-                    window.axios.get('/longPolling', {timeout: 10000}).then(res => {
+                    window.axios.get('/longPolling', {timeout: 1000}).then(res => {
                         this.time = res.data
                         this.timer && this.getTime()
                     }).catch(err => {

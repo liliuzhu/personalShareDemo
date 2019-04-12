@@ -2,12 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="https://unpkg.com/axios@0.18.0/dist/axios.min.js"></script>
     <title>polling</title>
 </head>
 <body>
 <div>
+    <button onclick="longConnection()">http 长连接</button>
+    <button onclick="stopLongConnection()">关闭长连接</button>
     <p id="longConnection"></p>
-    <iframe src="/longConnection" style="display:none"></iframe>
+    <iframe id="iframe" src="" style="display:none"></iframe>
 </div>
+<script>
+    var iframe = document.getElementById('iframe')
+    function longConnection() {
+        iframe.src='/longConnection2'
+        console.log(iframe)
+    }
+    function stopLongConnection() {
+        iframe.src='/'
+    }
+</script>
 </body>
 </html>
