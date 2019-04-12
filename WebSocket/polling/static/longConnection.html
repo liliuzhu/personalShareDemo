@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/axios@0.18.0/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue@2.6.10/dist/vue.min.js"></script>
+    <title>polling</title>
+</head>
+<body>
+<div id="app">
+    <button @click="longConnection">http 长连接</button>
+    <button @click="stopLongConnection">关闭长连接</button>
+    <p>{{time}}</p>
+</div>
+<script>
+    window.onload=function(){
+        let vm=new Vue({
+            el:'#app',
+            data:{
+                time: '',
+                timer: null,
+                source: null
+            },
+            methods: {
+                stopLongConnection() {
+                    window.axios.get('/stopLongConnection',).then(res => {
+                        this.time = res.data
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                },
+                longConnection() {
+                    this.getTime()
+                },
+                getTime(){
+                    // 实例化 EventSource 对象，并指定一个 URL 地址
+                    const eventSource = new EventSource('/longConnection'); // 使用 addEventListener() 方法监听事件
+                    eventSource.addEventListener('message', (res) => {
+                        // 消息数据
+                        this.time = res.data
+                    }, false);
+                }
+            }
+        });
+    };
+</script>
+</body>
+</html>
