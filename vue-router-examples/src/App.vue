@@ -12,6 +12,26 @@ export default {
   name: 'App',
   components: {navigation}
 }
+window.getHash = function () {
+  let href = window.location.href
+  const index = href.indexOf('#')
+  // empty path
+  if (index < 0) return ''
+  href = href.slice(index + 1)
+  const searchIndex = href.indexOf('?')
+  if (searchIndex < 0) {
+    const hashIndex = href.indexOf('#')
+    if (hashIndex > -1) {
+      href = decodeURI(href.slice(0, hashIndex)) + href.slice(hashIndex)
+    } else href = decodeURI(href)
+  } else {
+    if (searchIndex > -1) {
+      href = decodeURI(href.slice(0, searchIndex)) + href.slice(searchIndex)
+    }
+  }
+
+  return href
+}
 </script>
 
 <style lang="scss">

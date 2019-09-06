@@ -5,7 +5,7 @@
       <li>
         <ul>
           <li><router-link to="/view1">页面1</router-link></li>
-          <li><router-link to="/view1/view1Children">页面1子路由</router-link></li>
+          <li><router-link to="/view1/view1Children?weer=哈#&sads=qwew">页面1子路由</router-link></li>
         </ul>
       </li>
       <li>
@@ -14,6 +14,7 @@
           <li><router-link to="/view2/view2Children">页面2子路由</router-link></li>
         </ul>
       </li>
+      <li><router-link to="/view3">新路由</router-link></li>
     </ul>
   </div>
 </template>

@@ -15,12 +15,16 @@ export default {
   },
   watch: {
     $route (nval, oval) {
-      console.log(nval, oval)
+      console.log(nval, oval, this.$router)
     }
   },
+  beforeRouteLeave (to, from, next) {
+    console.log(to, from, next)
+    next()
+  },
   created () {
-    console.log(this.$route)
-    console.log(this.$router)
+    // console.log(this.$route)
+    // console.log(this.$router)
   }
 }
 </script>
