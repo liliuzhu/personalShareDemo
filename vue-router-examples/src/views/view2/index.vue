@@ -15,16 +15,17 @@ export default {
   },
   watch: {
     $route (nval, oval) {
+      console.log('$route变化')
       console.log(nval, oval, this.$router)
     }
   },
   beforeRouteLeave (to, from, next) {
-    console.log(to, from, next)
+    console.log('beforeRouteLeave')
+    console.log(to, from)
     next()
   },
   created () {
-    // console.log(this.$route)
-    // console.log(this.$router)
+    console.log(this)
   }
 }
 </script>

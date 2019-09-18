@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <navigation/>
-    <router-view/>
+    <router-view>
+      <div>我是router-view的children</div>
+    </router-view>
   </div>
 </template>
 
@@ -12,7 +14,7 @@ export default {
   name: 'App',
   components: {navigation}
 }
-window.getHash = function () {
+/* window.getHash = function () {
   let href = window.location.href
   const index = href.indexOf('#')
   // empty path
@@ -31,7 +33,7 @@ window.getHash = function () {
   }
 
   return href
-}
+} */
 </script>
 
 <style lang="scss">

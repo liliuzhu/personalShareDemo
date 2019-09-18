@@ -11,7 +11,18 @@ export default {
     return {
       content: 'view1'
     }
+  },
+  mounted () { // 已挂载
+    this.$router.addRoutes([{
+      path: '/view3',
+      name: 'view3',
+      component: () => import('@/views/view3'),
+      mate: {
+        title: 'view3'
+      }
+    }])
   }
+
 }
 </script>
 <style rel="stylesheet/css" type="text/css" lang="scss">

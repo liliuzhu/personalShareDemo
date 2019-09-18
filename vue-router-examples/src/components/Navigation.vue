@@ -1,6 +1,7 @@
 <template>
   <div class="navigation">
     <ul class="top_list">
+      <li><a href="#/">首页/</a></li>
       <li><router-link to="/">首页</router-link></li>
       <li>
         <ul>
@@ -43,5 +44,8 @@ export default {
         padding-right: 10px;
       }
     }
+  }
+  .router-link-exact-active {
+    color: red;
   }
 </style>

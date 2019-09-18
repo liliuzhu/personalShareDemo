@@ -4,6 +4,7 @@
       <div>123</div>
     </function>
     {{content}}
+    <slot name="default" />
   </div>
 </template>
 <script type="text/ecmascript-6">

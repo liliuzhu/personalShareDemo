@@ -9,7 +9,9 @@ export default {
     }
   },
   render (createElement, context) {
+    console.log('自定义functional')
     console.log(createElement, context)
+    // const h = context.parent.$createElement
     return createElement()
   }
 }

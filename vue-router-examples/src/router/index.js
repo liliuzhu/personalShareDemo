@@ -10,7 +10,7 @@ import View2Children2 from '@/views/view2/View2Children2'
 Vue.use(Router)
 
 export default new Router({
-  mode: 'hash',
+  mode: 'history',
   routes: [
     {
       path: '/',
