@@ -13,7 +13,7 @@
     "babel-runtime": "^6.0.0",
     "cors": "^2.8.1",
     "jquery": "^3.2.1",
-    "node-sass": "^3.10.0",
+    "node-sass": "^4.13.1",
     "pinyin": "^2.8.0",
     "sass-loader": "^4.0.2",
     "socket.io": "^1.5.0",
