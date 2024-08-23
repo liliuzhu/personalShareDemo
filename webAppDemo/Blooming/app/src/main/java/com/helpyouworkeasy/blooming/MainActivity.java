@@ -2,10 +2,11 @@ package com.helpyouworkeasy.blooming;
 
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+//import android.support.v7.app.ActionBar;
+//import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.app.Activity;
+import android.os.Looper;
 import android.telephony.TelephonyManager;
 
 import java.io.IOException;
@@ -65,6 +66,7 @@ import android.view.ViewGroup;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONStringer;
 
 public class MainActivity extends Activity{
     private WebView webView;
@@ -81,7 +83,7 @@ public class MainActivity extends Activity{
     private FrameLayout fullscreenContainer;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private String newPower;//最新电量
-    private final String reSetHTTP = "http://172.18.2.37:8081";
+    private final String reSetHTTP = "http://10.240.160.9:8080/jsbShare";
     protected static  MainActivity mactivity;
 
     @Override
@@ -100,36 +102,36 @@ public class MainActivity extends Activity{
     @Override
     protected void onStart(){  //生命周期
         super.onStart();
-//        toastMessage("onStart");
+//        customUtil.showToast("onStart");
     }
     @Override
     protected void onRestart(){ //生命周期
         super.onRestart();
 //        webView.loadUrl("javascript: restart();");//调用html中的js
-//        toastMessage("onRestart");
+//        customUtil.showToast("onRestart");
     }
     @Override
     protected void onResume(){ //生命周期
         super.onResume();
-//        toastMessage("onResume");
+//        customUtil.showToast("onResume");
         register();
     }
     @Override
     protected void onPause(){ //生命周期
         super.onPause();
-//        toastMessage("onPause");
+//        customUtil.showToast("onPause");
         unregister();
     }
     @Override
     protected void onStop() { //生命周期
         super.onStop();
 //        webView.reload();
-//        toastMessage("onStop");
+//        customUtil.showToast("onStop");
     }
 
     protected void onDestroy(){
         super.onDestroy();
-        toastMessage("onDestroy：关闭APP");
+        customUtil.showToast("onDestroy：关闭APP");
 
         /***
          * 防止WebView加载内存泄漏
@@ -152,7 +154,7 @@ public class MainActivity extends Activity{
                 int scale = intent.getIntExtra("scale", 100);
                 String power=newPower= (level * 100 / scale)+"%";
 //                webView.loadUrl("javascript:saveEquipmentPower('"+power+"')");//调用html中的js
-//                toastMessage("当前电量："+power);
+//                customUtil.showToast("当前电量："+power);
 //                Log.d("Deom", "电池电量：:" + power);
 //                mBatteryView.setPower(power);
             }
@@ -163,7 +165,7 @@ public class MainActivity extends Activity{
     class JSInterface{   // 代理对象
         @JavascriptInterface //注意这里的注解。出于安全的考虑，4.2 之后强制要求，不然无法从 Javascript 中发起调用
         public void AndroidToastMessage(String message) {
-            toastMessage(message);
+            customUtil.showToast(message);
         }
         @JavascriptInterface
         public void AndroidCloseApp() {
@@ -178,15 +180,29 @@ public class MainActivity extends Activity{
             return getEquipmentSN();
         }
     }
+
+    class plumJsbridge{   // 代理对象
+        @JavascriptInterface //注意这里的注解。出于安全的考虑，4.2 之后强制要求，不然无法从 Javascript 中发起调用
+        public void postMessage(String message) {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // 这里是1秒后需要执行的代码
+                    new plumJsbridgeManager().handleUrlLoading(webView, message);
+                }
+            }, 0); // 延迟时间为1000毫秒，即1秒
+        }
+    }
+
     public void button1Click(View view) { // 按钮点击事件
-        toastMessage("native button1被点击");
+        customUtil.showToast("native button1被点击");
         String params = "{'action': 'button1', 'data': {'message': '我是nativeButton-1返回的消息'}}";
         String jsonObject = "";
         try{
             jsonObject = (new JSONObject(params)).toString();
-            webView.loadUrl("javascript:window.WebViewJavascriptBridge._nativeDispatchToJS(" + jsonObject + ")"); //调用html中的js
+            customUtil.evaluateJavascript(webView, "javascript:window._nativeDispatchToJS(" + jsonObject + ")");
         } catch (JSONException e){
-            toastMessage(e.toString());
+            customUtil.showToast(e.toString());
             e.printStackTrace();
         }
     }
@@ -194,35 +210,20 @@ public class MainActivity extends Activity{
         webView.loadUrl(reSetHTTP);
     }
     public void button2Click(View view) { // 按钮点击事件
-        toastMessage("native button2被点击");
+        customUtil.showToast("native button2被点击");
         String params = "{'action': 'button2', 'data': {'message': '我是nativeButton-2返回的消息'}}";
         String jsonObject = "";
         try{
             jsonObject = (new JSONObject(params)).toString();
-            // Android版本变量
-            final int version = Build.VERSION.SDK_INT;
-            // 因为该方法在 Android 4.4 版本才可使用，所以使用时需进行版本判断
-            if (version < 19) {
-                webView.loadUrl("javascript:window.WebViewJavascriptBridge._nativeDispatchToJS(" + jsonObject + ")");
-            } else {
-                webView.evaluateJavascript("javascript:window.WebViewJavascriptBridge._nativeDispatchToJS(" + jsonObject + ")", new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String value) {
-                                //此处为 js 返回的结果
-                                toastMessage("js返回的内容：" + value);
-                            }
-                        }
-                ); //调用html中的js
-            }
+            customUtil.evaluateJavascript(webView, "javascript:window._nativeDispatchToJS(" + jsonObject + ")");
         } catch (JSONException e){
-            toastMessage(e.toString());
+            customUtil.showToast(e.toString());
             e.printStackTrace();
         }
     }
-//    @JavascriptInterface  //js调用比写声明/sdk17版本以上加上注解
-    public void toastMessage(String message) { //安卓原生弹框
-        customUtil.showToast(getApplicationContext(), message);
-//        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
+    public Context getContext(String message) { //安卓原生弹框
+       return getApplicationContext();
     }
     //获取设备电量
     public String getEquipmentPower(){
@@ -235,7 +236,18 @@ public class MainActivity extends Activity{
     }
     //获取设备号
     public String getEquipmentSN() {
-        return android.os.Build.SERIAL;
+//        return android.os.Build.SERIAL;
+       String BuildString = "Device Info:\n" +
+               "Brand: " + Build.BRAND + "\n" +
+               "Device: " + Build.DEVICE + "\n" +
+               "Model: " + Build.MODEL + "\n" +
+               "Manufacturer: " + Build.MANUFACTURER + "\n" +
+               "Board: " + Build.BOARD + "\n" +
+               "Serial: " + Build.SERIAL + "\n" +
+               "ID: " + Build.ID + "\n" +
+               "Product: " + Build.PRODUCT;
+       customUtil.log(BuildString);
+        return BuildString;
     }
     // 打开进度条
     protected void openProgressBar(int x) {
@@ -258,14 +270,14 @@ public class MainActivity extends Activity{
 //            }else{
 //                webView.loadUrl("javascript:ipadBackKey()");//调用html中的js
 //            }
-			if (webView.canGoBack()) {
-				// 返回上一页面
-				webView.goBack();
-				return true;
-			} else {
-				// 退出程序
-				closeApp();
-			}
+            if (webView.canGoBack()) {
+                // 返回上一页面
+                webView.goBack();
+                return true;
+            } else {
+                // 退出程序
+                closeApp();
+            }
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -276,7 +288,8 @@ public class MainActivity extends Activity{
 
         WebSettings settings = webView.getSettings();
         settings.setRenderPriority(RenderPriority.HIGH);
-        settings.setUserAgentString(settings.getUserAgentString() + " renrenche/5.4.0"); //添加UA,  “app/XXX”：是与h5商量好的标识，h5确认UA为app/XXX就认为该请求的终端为App
+//        settings.setUserAgentString(settings.getUserAgentString() + " renrenche/5.4.0"); //添加UA,  “app/XXX”：是与h5商量好的标识，h5确认UA为app/XXX就认为该请求的终端为App
+        settings.setUserAgentString(settings.getUserAgentString() + " androidapp version:(5.3.0)"); //添加UA,  “app/XXX”：是与h5商量好的标识，h5确认UA为app/XXX就认为该请求的终端为App
 
         // 启用支持javascript
         settings.setJavaScriptEnabled(true);// 让webview对象支持解析javascript语句
@@ -285,13 +298,13 @@ public class MainActivity extends Activity{
         // 开启DOM缓存。  //  打开H5的Dom Storage(localStorage,sessionStorage)
         settings.setDomStorageEnabled(true);  //支持H5本地存储
         settings.setDatabaseEnabled(true);     // 应用可以有数据库
-        String dbPath = this .getApplicationContext().getDir( "database" , Context.MODE_PRIVATE).getPath();
+        String dbPath = this.getApplicationContext().getDir( "database" , Context.MODE_PRIVATE).getPath();
         settings.setDatabasePath(dbPath);
         settings.setAllowFileAccess(true);
-        settings.setAppCacheEnabled(true); // 应用可以有缓存
-        settings.setAppCacheMaxSize(1024*1024*512);//设置缓冲大小，我设的是512M
+//        settings.setAppCacheEnabled(true); // 应用可以有缓存
+//        settings.setAppCacheMaxSize(1024*1024*512);//设置缓冲大小，我设的是512M
         String appCachePath = this.getApplicationContext().getDir("cache" , Context.MODE_PRIVATE).getPath();
-        settings.setAppCachePath(appCachePath);
+//        settings.setAppCachePath(appCachePath);
         settings.setAllowFileAccess(true); // 允许访问文件
 //        settings.setAllowFileAccessFromFileURLs(true);
         settings.setBuiltInZoomControls(false);//设置支持两指缩放手势
@@ -342,6 +355,7 @@ public class MainActivity extends Activity{
                         return true;
                     }
                     if (url.startsWith("http:") || url.startsWith("https:")) {
+                        customUtil.log("加载的资源=" + url);
                         view.loadUrl(url);
                         return true;
                     } else {
@@ -379,7 +393,7 @@ public class MainActivity extends Activity{
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 super.onReceivedError(view, errorCode, description, failingUrl);
-                toastMessage("onError");
+                customUtil.showToast("onError");
 //                webView.loadUrl("file:///android_asset/meetingAndroid/login.html");
             }
         });
@@ -401,7 +415,7 @@ public class MainActivity extends Activity{
                 super.onProgressChanged(view, newProgress);
             }
             //扩充缓存的容量
-            @Override
+//            @Override
             public void onReachedMaxAppCacheSize(long spaceNeeded, long totalUsedQuota , WebStorage.QuotaUpdater  quotaUpdater) {
                 //Log.e(APP_CACHE, ”onReachedMaxAppCacheSize reached, increasing space: ” + spaceNeeded);
                 quotaUpdater.updateQuota(spaceNeeded * 2);
@@ -431,6 +445,8 @@ public class MainActivity extends Activity{
         //js调用安卓的接口
 //        webView.addJavascriptInterface(this, "android");
         webView.addJavascriptInterface(new JSInterface(), "JSInterface");
+
+        webView.addJavascriptInterface(new plumJsbridge(), "plumJsbridge");
         // webView加载web资源
         webView.loadUrl(reSetHTTP);
 //		startReadUrl("file:///android_asset/meetingAndroid/login.html");

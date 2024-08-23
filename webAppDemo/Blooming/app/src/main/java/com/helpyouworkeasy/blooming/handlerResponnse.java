@@ -1,7 +1,4 @@
 package com.helpyouworkeasy.blooming;
-
-import android.os.Looper;
-import android.os.Message;
 import android.webkit.WebView;
 
 import org.json.JSONObject;
@@ -11,16 +8,14 @@ import org.json.JSONObject;
  */
 
 public class handlerResponnse {
-        final static String JS_HANDLE_MESSAGE_FROM_JAVA = "javascript:window.WebViewJavascriptBridge._dispatchMessageFromNative('%s');";
-    public static void dispatchMessage(WebView webView, JSONObject m) {
+    final static String JS_HANDLE_MESSAGE_FROM_JAVA = "javascript:window.%1$s('%2$s');";
+    public static void dispatchMessage(WebView webView, JSONObject m, String callback) {
         String messageJson = m.toString();
         //escape special characters for json string
         messageJson = messageJson.replaceAll("(\\\\)([^utrn])", "\\\\\\\\$1$2");
         messageJson = messageJson.replaceAll("(?<=[^\\\\])(\")", "\\\\\"");
-        String javascriptCommand = String.format(JS_HANDLE_MESSAGE_FROM_JAVA, messageJson);
-        System.out.println(javascriptCommand);
-        if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
-            webView.loadUrl(javascriptCommand);
-        }
+        String javascriptCommand = String.format(JS_HANDLE_MESSAGE_FROM_JAVA, callback, messageJson);
+        customUtil.println(javascriptCommand);
+        customUtil.evaluateJavascript(webView, javascriptCommand);
     }
 }
